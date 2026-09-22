@@ -266,9 +266,10 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 		margin: 0;
 	}
 
+	/* auto-fit so the grid stays full-width as services are added or parked */
 	.services {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
+		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 		gap: 1.2em;
 		margin-top: 1.4em;
 	}
@@ -294,8 +295,7 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 	@media (max-width: 860px) {
 		.hero,
 		.two,
-		.steps,
-		.services {
+		.steps {
 			grid-template-columns: 1fr;
 		}
 	}

@@ -96,11 +96,4 @@ export const SERVICES: Service[] = [
 		summary:
 			"The other half of Pulse: we call your endpoint on a schedule, retry with backoff, and alert when it fails.",
 	},
-	{
-		name: "NanoDefer",
-		status: "planned",
-		host: "defer.nano-api.com",
-		summary:
-			"Hand us a payload and a timestamp; we deliver it to your webhook at that exact moment. Nothing to run in between.",
-	},
 ];
