@@ -22,7 +22,7 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={`${SITE_TITLE} — a dead man's switch for your jobs`} description={SITE_DESCRIPTION} />
+		<BaseHead title={`${SITE_TITLE} — know when a job stops running`} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
 		<Header />
@@ -32,9 +32,9 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 					<p class="eyebrow">nano-api / pulse</p>
 					<h1>Your backup job died at 03:14.<br /><span class="dim">Nobody noticed until Monday.</span></h1>
 					<p class="lede">
-						NanoPulse is a dead man's switch for cron jobs, background workers and servers. Your job
-						pings us when it succeeds. If the ping stops arriving, we tell you — in Slack, within
-						five minutes.
+						NanoPulse tells you when a job you depend on has stopped running — a backup, an export,
+						a queue worker. It pings us each time it succeeds, and when the ping stops arriving you
+						hear about it in Slack within five minutes.
 					</p>
 					<p class="cta">
 						<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=NanoPulse%20API%20key`}>Get an API key</a>

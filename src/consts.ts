@@ -3,7 +3,7 @@
 
 export const SITE_TITLE = "nano-api";
 export const SITE_DESCRIPTION =
-	"Small, sharp APIs that do one thing. Starting with NanoPulse: a dead man's switch for cron jobs, background workers and servers.";
+	"Small, sharp APIs that do one thing. NanoPulse tells you when a job you depend on has stopped running — a backup, an export, a queue worker, a server.";
 
 export const CONTACT_EMAIL = "hello@nano-api.com";
 export const X_URL = "https://x.com/gautes";
@@ -86,7 +86,7 @@ export const SERVICES: Service[] = [
 		status: "live",
 		host: "pulse.nano-api.com",
 		summary:
-			"Heartbeat monitoring. Your job pings on success; we shout when the ping stops arriving.",
+			"Find out when a job you depend on has stopped running. It pings us on success; we alert the moment it goes quiet.",
 		href: "/pricing/",
 	},
 	{
