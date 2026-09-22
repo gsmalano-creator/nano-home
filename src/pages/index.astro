@@ -1,50 +1,302 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import PulseDemo from "../components/PulseDemo.astro";
+import {
+	CONTACT_EMAIL,
+	PLANS,
+	PULSE_BASE,
+	SERVICES,
+	SITE_DESCRIPTION,
+	SITE_TITLE,
+	X_HANDLE,
+	X_URL,
+} from "../consts";
+
+const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
+  curl -fsS -X POST -H "Authorization: Bearer $NANOPULSE_API_KEY" \\
+    ${PULSE_BASE}/v1/ping/nightly-backup`;
 ---
 
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<BaseHead title={`${SITE_TITLE} — a dead man's switch for your jobs`} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
 		<Header />
 		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This
-				template serves as a lightweight, minimally-styled starting point for anyone looking to build
-				a personal website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to <a href="https://docs.astro.build/"
-					>read the docs
-				</a> or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out <a
-					href="https://github.com/Charca/astro-blog-template"
-					>astro-blog-template
-				</a> by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
+			<section class="hero">
+				<div>
+					<p class="eyebrow">nano-api / pulse</p>
+					<h1>Your backup job died at 03:14.<br /><span class="dim">Nobody noticed until Monday.</span></h1>
+					<p class="lede">
+						NanoPulse is a dead man's switch for cron jobs, background workers and servers. Your job
+						pings us when it succeeds. If the ping stops arriving, we tell you — in Slack, within
+						five minutes.
+					</p>
+					<p class="cta">
+						<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=NanoPulse%20API%20key`}>Get an API key</a>
+						<a class="button secondary" href="/pricing/">Pricing</a>
+					</p>
+					<p class="fineprint muted">
+						Free for 5 monitors. No signup form, no credit card — mail
+						<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or ping
+						<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X, and you get a key.
+					</p>
+				</div>
+				<PulseDemo />
+			</section>
+
+			<section class="band">
+				<h2>One line in your crontab</h2>
+				<p>
+					No agent, no SDK, no sidecar. The <code>&&</code> is the entire trick: if the job fails,
+					the ping never happens, and silence is what we alert on.
+				</p>
+				<pre><code>{cron}</code></pre>
+				<p class="muted small">
+					First ping creates the monitor. Add <code>?interval=86400&amp;grace=3600</code> to say how
+					often you expect it and how late it may be.
+				</p>
+			</section>
+
+			<section class="band">
+				<h2>Uptime checks watch the door. We watch the work.</h2>
+				<div class="two">
+					<div class="card">
+						<p class="tag">Uptime monitoring</p>
+						<ul class="plain">
+							<li>Pings <em>your server</em> and sees HTTP 200</li>
+							<li>Says nothing when the nightly export never ran</li>
+							<li>Cannot see inside a queue worker, a Kubernetes CronJob, or a laptop script</li>
+							<li>Needs your job to be reachable from the internet</li>
+						</ul>
+					</div>
+					<div class="card alive-edge">
+						<p class="tag live">NanoPulse</p>
+						<ul class="plain">
+							<li>Waits for <em>your job</em> to report success</li>
+							<li>Alerts on the absence of a signal, which is the failure nobody catches</li>
+							<li>Works anywhere <code>curl</code> works — behind NAT, in CI, on a Raspberry Pi</li>
+							<li>Takes a payload, so the ping can carry "12 043 rows exported"</li>
+						</ul>
+					</div>
+				</div>
+			</section>
+
+			<section class="band">
+				<h2>How it works</h2>
+				<ol class="steps">
+					<li>
+						<span class="n">1</span>
+						<h3>Ping on success</h3>
+						<p>
+							One HTTP call at the end of your job. GET or POST, so <code>curl</code> and
+							<code>wget</code> one-liners work unchanged.
+						</p>
+					</li>
+					<li>
+						<span class="n">2</span>
+						<h3>We do the counting</h3>
+						<p>
+							Every monitor has an expected interval and a grace period. A scheduled sweep at the
+							edge checks, every five minutes, who has gone quiet.
+						</p>
+					</li>
+					<li>
+						<span class="n">3</span>
+						<h3>We shout once</h3>
+						<p>
+							A Slack-shaped webhook on the way down and again on recovery — on transitions only,
+							so you are not woken twice for the same outage.
+						</p>
+					</li>
+				</ol>
+			</section>
+
+			<section class="band">
+				<h2>The family</h2>
+				<p>
+					Each service is a single subdomain, one API key, and one job it does well. No dashboard you
+					have to learn.
+				</p>
+				<div class="services">
+					{
+						SERVICES.map((s) => (
+							<div class="card service">
+								<p class:list={["tag", { live: s.status === "live" }]}>
+									{s.status === "live" ? "Live" : "Planned"}
+								</p>
+								<h3>{s.name}</h3>
+								<code>{s.host}</code>
+								<p class="muted">{s.summary}</p>
+								{s.href && <a href={s.href}>Pricing &rarr;</a>}
+							</div>
+						))
+					}
+				</div>
+			</section>
+
+			<section class="band">
+				<h2>Pricing, in one glance</h2>
+				<table class="teaser">
+					<thead>
+						<tr><th>Plan</th><th>Monitors</th><th>Price</th></tr>
+					</thead>
+					<tbody>
+						{
+							PLANS.map((p) => (
+								<tr>
+									<td>{p.name}</td>
+									<td class="mono">{p.monitors}</td>
+									<td>
+										{p.price} <span class="muted small">{p.cadence}</span>
+									</td>
+								</tr>
+							))
+						}
+					</tbody>
+				</table>
+				<p><a class="button" href="/pricing/">See what is included</a></p>
+			</section>
 		</main>
 		<Footer />
 	</body>
 </html>
+
+<style>
+	.hero {
+		display: grid;
+		grid-template-columns: 1.05fr 1fr;
+		gap: 2.5em;
+		align-items: center;
+		padding: 2em 0 1em;
+	}
+	.dim {
+		color: var(--muted);
+	}
+	.lede {
+		font-size: 1.1rem;
+		color: var(--muted);
+		max-width: 34em;
+	}
+	.cta {
+		display: flex;
+		gap: 0.7em;
+		flex-wrap: wrap;
+		margin: 1.4em 0 0.6em;
+	}
+	.fineprint {
+		font-size: 0.85rem;
+	}
+
+	.band {
+		padding: 3em 0 0;
+	}
+	.band > p {
+		max-width: 46em;
+		color: var(--muted);
+	}
+	.small {
+		font-size: 0.85rem;
+	}
+	.mono {
+		font-family: var(--mono);
+		font-size: 0.85rem;
+	}
+
+	.two {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 1.2em;
+		margin-top: 1.4em;
+	}
+	.alive-edge {
+		border-color: var(--alive-dim);
+	}
+	ul.plain {
+		list-style: none;
+		margin: 1em 0 0;
+		padding: 0;
+		font-size: 0.95rem;
+	}
+	ul.plain li {
+		padding-left: 1.3em;
+		position: relative;
+		margin-bottom: 0.6em;
+		color: var(--muted);
+	}
+	ul.plain li::before {
+		content: "·";
+		position: absolute;
+		left: 0.3em;
+	}
+	.alive-edge ul.plain li::before {
+		content: "✓";
+		color: var(--alive);
+		left: 0;
+	}
+
+	.steps {
+		list-style: none;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.2em;
+		margin: 1.4em 0 0;
+		padding: 0;
+	}
+	.steps li {
+		border-top: 2px solid var(--border);
+		padding-top: 1em;
+	}
+	.steps .n {
+		font-family: var(--mono);
+		color: var(--alive);
+		font-size: 0.8rem;
+	}
+	.steps h3 {
+		font-size: 1.05rem;
+		margin: 0.2em 0 0.4em;
+	}
+	.steps p {
+		color: var(--muted);
+		font-size: 0.93rem;
+		margin: 0;
+	}
+
+	.services {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.2em;
+		margin-top: 1.4em;
+	}
+	.service h3 {
+		margin: 0.6em 0 0.3em;
+	}
+	.service p.muted {
+		font-size: 0.93rem;
+		margin: 0.8em 0 0.6em;
+	}
+
+	table.teaser {
+		margin: 1.2em 0 1.6em;
+		max-width: 34em;
+	}
+	table.teaser th {
+		font-size: 0.78rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--muted);
+	}
+
+	@media (max-width: 860px) {
+		.hero,
+		.two,
+		.steps,
+		.services {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

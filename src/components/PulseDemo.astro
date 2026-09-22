@@ -1,0 +1,263 @@
+---
+// The hero graphic *is* the product demo: a heartbeat that stops, a line that
+// goes flat, and the alert that follows. One 12s CSS loop, no JavaScript.
+const baseline = 60;
+const beat = " l10 -36 l10 72 l10 -36";
+let beats = `M0 ${baseline}`;
+for (let x = 24; x <= 324; x += 75) beats += ` H${x}${beat}`;
+beats += " H360";
+---
+
+<figure class="demo">
+	<figcaption class="head">
+		<span class="dot" aria-hidden="true"></span>
+		<code>POST /v1/ping/nightly-backup</code>
+	</figcaption>
+
+	<svg viewBox="0 0 600 120" preserveAspectRatio="none" role="img"
+		aria-label="A heartbeat trace that stops and flatlines, followed by an alert">
+		<path class="beats" d={beats} pathLength="1"></path>
+		<path class="flat" d={`M360 ${baseline} H600`} pathLength="1"></path>
+	</svg>
+
+	<div class="states" aria-hidden="true">
+		<span class="s s1">ok · pinged 4s ago</span>
+		<span class="s s2">late · 41s since last ping</span>
+		<span class="s s3">down · 96s since last ping</span>
+	</div>
+
+	<output class="alert">
+		<span aria-hidden="true">🔴</span> Monitor <b>nightly-backup</b> has not pinged for 96s
+		(expected every 30s + 0s grace).
+	</output>
+</figure>
+
+<style>
+	.demo {
+		--loop: 12s;
+		margin: 0;
+		background: linear-gradient(180deg, var(--surface) 0%, #0d131b 100%);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		padding: 1.1em 1.2em 1.3em;
+		box-shadow: var(--box-shadow);
+	}
+
+	.head {
+		display: flex;
+		align-items: center;
+		gap: 0.7em;
+		margin-bottom: 0.6em;
+	}
+	.head code {
+		background: none;
+		border: none;
+		padding: 0;
+		color: var(--muted);
+		font-size: 0.8rem;
+	}
+	.dot {
+		width: 9px;
+		height: 9px;
+		border-radius: 50%;
+		background: var(--alive);
+		box-shadow: 0 0 0 4px var(--alive-dim);
+		animation: flip var(--loop) infinite;
+	}
+
+	svg {
+		display: block;
+		width: 100%;
+		height: 110px;
+	}
+	path {
+		fill: none;
+		stroke-width: 2.5;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		vector-effect: non-scaling-stroke;
+		stroke-dasharray: 1;
+	}
+	.beats {
+		stroke: var(--alive);
+		animation: drawBeats var(--loop) linear infinite;
+	}
+	.flat {
+		stroke: var(--alert);
+		animation: drawFlat var(--loop) linear infinite;
+	}
+
+	.states {
+		position: relative;
+		height: 1.5em;
+		font-family: var(--mono);
+		font-size: 0.78rem;
+	}
+	.s {
+		position: absolute;
+		inset: 0;
+		opacity: 0;
+		animation: var(--loop) infinite;
+	}
+	.s1 {
+		color: var(--alive);
+		animation-name: showOk;
+	}
+	.s2 {
+		color: #fbbf5c;
+		animation-name: showLate;
+	}
+	.s3 {
+		color: var(--alert);
+		animation-name: showDown;
+	}
+
+	.alert {
+		display: block;
+		margin-top: 0.4em;
+		padding: 0.75em 0.9em;
+		border-radius: 10px;
+		border: 1px solid var(--alert-dim);
+		background: var(--alert-dim);
+		font-size: 0.85rem;
+		opacity: 0;
+		transform: translateY(6px);
+		animation: showAlert var(--loop) infinite;
+	}
+	.alert b {
+		font-family: var(--mono);
+	}
+
+	@keyframes drawBeats {
+		0% {
+			stroke-dashoffset: 1;
+			opacity: 1;
+		}
+		45%,
+		92% {
+			stroke-dashoffset: 0;
+			opacity: 1;
+		}
+		97%,
+		100% {
+			stroke-dashoffset: 0;
+			opacity: 0;
+		}
+	}
+	@keyframes drawFlat {
+		0%,
+		45% {
+			stroke-dashoffset: 1;
+			opacity: 0;
+		}
+		46% {
+			stroke-dashoffset: 1;
+			opacity: 1;
+		}
+		78%,
+		92% {
+			stroke-dashoffset: 0;
+			opacity: 1;
+		}
+		97%,
+		100% {
+			stroke-dashoffset: 0;
+			opacity: 0;
+		}
+	}
+	@keyframes showOk {
+		0%,
+		44% {
+			opacity: 1;
+		}
+		46%,
+		100% {
+			opacity: 0;
+		}
+	}
+	@keyframes showLate {
+		0%,
+		46% {
+			opacity: 0;
+		}
+		48%,
+		70% {
+			opacity: 1;
+		}
+		72%,
+		100% {
+			opacity: 0;
+		}
+	}
+	@keyframes showDown {
+		0%,
+		72% {
+			opacity: 0;
+		}
+		74%,
+		95% {
+			opacity: 1;
+		}
+		97%,
+		100% {
+			opacity: 0;
+		}
+	}
+	@keyframes showAlert {
+		0%,
+		74% {
+			opacity: 0;
+			transform: translateY(6px);
+		}
+		80%,
+		94% {
+			opacity: 1;
+			transform: translateY(0);
+		}
+		97%,
+		100% {
+			opacity: 0;
+			transform: translateY(6px);
+		}
+	}
+	@keyframes flip {
+		0%,
+		70% {
+			background: var(--alive);
+			box-shadow: 0 0 0 4px var(--alive-dim);
+		}
+		74%,
+		100% {
+			background: var(--alert);
+			box-shadow: 0 0 0 4px var(--alert-dim);
+		}
+	}
+
+	/* Motion is decoration here; the end state carries the message on its own. */
+	@media (prefers-reduced-motion: reduce) {
+		.dot,
+		.beats,
+		.flat,
+		.s,
+		.alert {
+			animation: none;
+		}
+		.beats,
+		.flat {
+			stroke-dashoffset: 0;
+		}
+		.dot {
+			background: var(--alert);
+			box-shadow: 0 0 0 4px var(--alert-dim);
+		}
+		.s1,
+		.s2 {
+			opacity: 0;
+		}
+		.s3,
+		.alert {
+			opacity: 1;
+			transform: none;
+		}
+	}
+</style>

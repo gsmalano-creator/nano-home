@@ -1,64 +1,54 @@
-# Astro Starter Kit: Blog
+# nano-api.com
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/astro-blog-starter-template)
+Marketing site and docs for the [nano-api](https://nano-api.com) family of single-purpose APIs.
+Astro, deployed to Cloudflare Workers.
 
-![Astro Template Preview](https://github.com/withastro/astro/assets/2244813/ff10799f-a816-4703-b967-c78997e8323d)
+The first service is **NanoPulse** (`pulse.nano-api.com`) — a dead man's switch for cron jobs,
+background workers and servers. Its code lives in a separate repo.
 
-<!-- dash-content-start -->
+## Pages
 
-Create a blog with Astro and deploy it on Cloudflare Workers as a [static website](https://developers.cloudflare.com/workers/static-assets/).
+| Route | Content |
+| --- | --- |
+| `/` | Hero with an animated CSS demo of a heartbeat going flat, the crontab one-liner, uptime-vs-heartbeat comparison, the service family, pricing teaser |
+| `/pricing/` | Plans (Free / Pro / Business / Custom), what every plan includes, and the questions a buyer actually asks |
+| `/about/` | Who runs it, how it is built, and what not to expect |
 
-Features:
+## Editing content
 
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and OpenGraph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
-- ✅ Built-in Observability logging
+Everything commercial lives in `src/consts.ts`: plan names, prices, quotas, shared features, the
+service list and the contact channels (`CONTACT_EMAIL`, `X_URL`). The pricing page and the front page both read from it, so the two can never
+disagree. Change a price in one place.
 
-<!-- dash-content-end -->
-
-## Getting Started
-
-Outside of this repo, you can start a new project with this template using [C3](https://developers.cloudflare.com/pages/get-started/c3/) (the `create-cloudflare` CLI):
-
-```bash
-npm create cloudflare@latest -- --template=cloudflare/templates/astro-blog-starter-template
+```ts
+export const PLANS: Plan[] = [
+  { id: "pro", name: "Pro", price: "$9", cadence: "per month", monitors: "50 monitors", ... },
+];
 ```
 
-A live public deployment of this template is available at [https://astro-blog-starter-template.templates.workers.dev](https://astro-blog-starter-template.templates.workers.dev)
+Plans map directly onto the `users.monitor_limit` quota in NanoPulse — a plan *is* that number,
+so "upgrading" a customer is one API call and needs no change here unless the price moves.
 
-## 🚀 Project Structure
+## Development
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+```bash
+npm install
+npm run dev        # astro dev on :4321
+npm run preview    # astro build + wrangler dev, i.e. the real Workers runtime
+npm run check      # astro build && tsc && wrangler deploy --dry-run
+npm run deploy
+```
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+`.npmrc` pins the public npm registry: without it, a private company registry leaks into
+`package-lock.json` and Cloudflare's build fails with `npm error code E401`.
 
-The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
+## Design notes
 
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                           | Action                                           |
-| :-------------------------------- | :----------------------------------------------- |
-| `npm install`                     | Installs dependencies                            |
-| `npm run dev`                     | Starts local dev server at `localhost:4321`      |
-| `npm run build`                   | Build your production site to `./dist/`          |
-| `npm run preview`                 | Preview your build locally, before deploying     |
-| `npm run astro ...`               | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help`         | Get help using the Astro CLI                     |
-| `npm run build && npm run deploy` | Deploy your production site to Cloudflare        |
-| `npm wrangler tail`               | View real-time logs for all Workers              |
-
-## 👀 Want to learn more?
-
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
-
-## Credit
-
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
+- Dark, monospace-accented palette in `src/styles/global.css`. Tokens only — no framework.
+- The hero graphic (`src/components/PulseDemo.astro`) is one 12-second CSS loop with no
+  JavaScript, and collapses to a static end state under `prefers-reduced-motion`.
+- `public/og.png` is generated from an SVG; regenerate it with `sharp` if the wording changes.
+- Copy rule: the site may only claim what the API actually does. Email and SMS alerts, status
+  pages and SLAs are not built, so they are either absent or explicitly marked as not built.
+- No blog. Contact is `hello@nano-api.com` (forwarded with Cloudflare Email Routing) for keys and
+  invoices, with X as the informal alternative.
