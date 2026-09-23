@@ -1,0 +1,197 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import LockDemo from "../components/LockDemo.astro";
+import { CONTACT_EMAIL, LOCK_BASE, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
+
+const usage = `TOKEN=$(curl -sf -X POST "${LOCK_BASE}/v1/locks/nightly-import?ttl=60&owner=$HOSTNAME" \\
+  -H "Authorization: Bearer $NANO_API_KEY" | jq -r .token) || exit 0   # someone else has it
+
+trap 'curl -sf -X DELETE "${LOCK_BASE}/v1/locks/nightly-import?token=$TOKEN" \\
+  -H "Authorization: Bearer $NANO_API_KEY"' EXIT
+
+./import.sh`;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead
+			title={`NanoLock — ${SITE_TITLE}`}
+			description="A lock over HTTP: a lease with a TTL, a token only the holder knows, and a fencing counter. Stops two copies of a job running at once."
+		/>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section class="hero">
+				<div>
+					<p class="eyebrow">nano-api / lock</p>
+					<h1>Two instances woke up.<br /><span class="dim">Only one should run the job.</span></h1>
+					<p class="lede">
+						NanoLock is <code>flock</code> over HTTP. One call says whether you got it, and nobody
+						else gets it until you let go or your lease runs out. No Redis to run, no table to
+						maintain, no clever SQL to get subtly wrong.
+					</p>
+					<p class="cta">
+						<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get a free API key</a>
+						<a class="button secondary" href="/howto/#lock">Curl walkthrough</a>
+					</p>
+					<p class="fineprint muted">
+						Free while the service is young. Mail <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+						or ping <a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X.
+					</p>
+				</div>
+				<LockDemo />
+			</section>
+
+			<section class="band">
+				<h2>The whole thing, in a shell script</h2>
+				<pre><code>{usage}</code></pre>
+				<p class="muted small">
+					<code>curl -sf</code> fails on 409, so the second instance simply exits. The
+					<code>trap</code> releases the lock however the script ends — including when it crashes.
+				</p>
+			</section>
+
+			<section class="band">
+				<h2>Where this saves you</h2>
+				<div class="two">
+					<div class="card">
+						<p class="tag">Without a lock</p>
+						<ul class="plain">
+							<li>Two pods wake at 03:00 and both run the import</li>
+							<li>A slow run overlaps the next scheduled one</li>
+							<li>A retry fires while the original is still working</li>
+							<li>You add a database row as a flag, and get the race wrong</li>
+						</ul>
+					</div>
+					<div class="card alive-edge">
+						<p class="tag live">With NanoLock</p>
+						<ul class="plain">
+							<li>One HTTP call decides, atomically, who proceeds</li>
+							<li>The lease expires on its own if the holder dies</li>
+							<li>Only the holder can release it, so nobody frees someone else's lock</li>
+							<li>You can see who holds what, and until when</li>
+						</ul>
+					</div>
+				</div>
+			</section>
+
+			<section class="band">
+				<h2>What the guarantee is — and is not</h2>
+				<p>
+					Acquiring is a single atomic write that only overwrites a lease that has already expired.
+					Two callers arriving in the same millisecond cannot both win: one gets 201, the other gets
+					409. Twenty parallel requests against a fresh lock produce exactly one winner, which is a
+					test in the repo rather than a claim on a marketing page.
+				</p>
+				<p>
+					But a lease is not consensus, and you should know the failure it cannot prevent: if your
+					process stalls past its TTL — a long garbage collection, a suspended VM — the lease
+					expires, somebody else legitimately acquires, and for a moment two processes both believe
+					they hold the lock.
+				</p>
+				<p>
+					That is what the <strong>fence</strong> is for. Every acquisition gets a number that only
+					ever increases. Hand it to whatever you are protecting, have that remember the highest
+					number it has seen, and a stalled holder waking up late is rejected on arrival. It is the
+					difference between a lock that usually works and one you can reason about.
+				</p>
+				<p class="muted small">
+					Practical advice, in order: renew while you work, keep the TTL above your worst-case
+					runtime, and use the fence where being wrong would actually cost something.
+				</p>
+			</section>
+
+			<section class="band">
+				<h2>Pairs with the other two</h2>
+				<p>
+					Take a lock at the top of the job <a href="/relay/">NanoRelay</a> calls, and ping
+					<a href="/pulse/">NanoPulse</a> when it finishes. Relay makes sure it runs, Lock makes sure
+					it runs once, and Pulse notices if it stops running at all.
+				</p>
+				<p class="cta">
+					<a class="button" href="/howto/">How to, in curl</a>
+					<a class="button secondary" href="/pricing/">What it costs</a>
+				</p>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	.hero {
+		display: grid;
+		grid-template-columns: 1.05fr 1fr;
+		gap: 2.5em;
+		align-items: center;
+		padding: 2em 0 1em;
+	}
+	.dim {
+		color: var(--muted);
+	}
+	.lede {
+		font-size: 1.1rem;
+		color: var(--muted);
+		max-width: 34em;
+	}
+	.cta {
+		display: flex;
+		gap: 0.7em;
+		flex-wrap: wrap;
+		margin: 1.4em 0 0.6em;
+	}
+	.fineprint {
+		font-size: 0.85rem;
+	}
+	.band {
+		padding: 3em 0 0;
+	}
+	.band > p {
+		max-width: 46em;
+		color: var(--muted);
+	}
+	.small {
+		font-size: 0.85rem;
+	}
+	.two {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 1.2em;
+		margin-top: 1.4em;
+	}
+	.alive-edge {
+		border-color: var(--alive-dim);
+	}
+	ul.plain {
+		list-style: none;
+		margin: 1em 0 0;
+		padding: 0;
+		font-size: 0.95rem;
+	}
+	ul.plain li {
+		padding-left: 1.3em;
+		position: relative;
+		margin-bottom: 0.6em;
+		color: var(--muted);
+	}
+	ul.plain li::before {
+		content: "·";
+		position: absolute;
+		left: 0.3em;
+	}
+	.alive-edge ul.plain li::before {
+		content: "✓";
+		color: var(--alive);
+		left: 0;
+	}
+	@media (max-width: 860px) {
+		.hero,
+		.two {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

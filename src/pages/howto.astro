@@ -2,7 +2,7 @@
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import { CONTACT_EMAIL, SERVICES, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
+import { CONTACT_EMAIL, LOCK_BASE, SERVICES, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
 
 const relay = SERVICES.find((s) => s.name === "NanoRelay");
 const relayIsLive = relay?.status === "live";
@@ -10,6 +10,7 @@ const relayIsLive = relay?.status === "live";
 const setup = `export KEY=np_live_...              # the key you were sent
 export PULSE=https://pulse.nano-api.com
 export RELAY=https://relay.nano-api.com
+export LOCK=https://lock.nano-api.com
 auth=(-H "Authorization: Bearer $KEY" -H 'content-type: application/json')`;
 
 const firstPing = `curl -X POST "$PULSE/v1/ping/nightly-backup?interval=86400&grace=3600" "\${auth[@]}"`;
@@ -75,16 +76,29 @@ const pauseSchedule = `curl -X PATCH "$RELAY/v1/schedules/nightly-report" "\${au
 curl -X PATCH "$RELAY/v1/schedules/nightly-report" "\${auth[@]}" -d '{"cron": "*/15 * * * *"}'
 curl -X DELETE "$RELAY/v1/schedules/nightly-report" "\${auth[@]}"`;
 
-const both = `# Relay runs the job, and pings Pulse when the job reports success.
+const both = `# 1. Relay calls your endpoint every hour.
 curl -X POST "$RELAY/v1/schedules" "\${auth[@]}" -d '{
   "slug": "hourly-sync",
   "cron": "0 * * * *",
   "url": "https://api.example.com/jobs/sync"
 }'
 
-# The job itself ends with a ping, so you are covered even if Relay
-# never calls: silence is still an alert.
+# 2. Inside that endpoint: take the lock, or return early.
+#    3. And ping Pulse at the end, so silence is still an alert
+#       even if Relay itself stops calling.
 curl -X POST "$PULSE/v1/ping/hourly-sync?interval=3600&grace=600" "\${auth[@]}"`;
+
+const lockAcquire = `TOKEN=$(curl -sf -X POST "$LOCK/v1/locks/nightly-import?ttl=60&owner=$HOSTNAME" \\
+  "\${auth[@]}" | jq -r .token) || { echo "someone else has it"; exit 0; }
+
+trap 'curl -sf -X DELETE "$LOCK/v1/locks/nightly-import?token=$TOKEN" "\${auth[@]}"' EXIT
+
+./import.sh`;
+
+const lockRenew = `curl -X POST "$LOCK/v1/locks/nightly-import/renew?token=$TOKEN&ttl=60" "\${auth[@]}"`;
+
+const lockStatus = `curl -s "$LOCK/v1/locks" "\${auth[@]}" | jq
+# [{ "name": "nightly-import", "held": true, "owner": "pod-a", "fence": 8, "expires_at": "..." }]`;
 
 const keys = `curl -s "$PULSE/v1/keys" "\${auth[@]}" | jq            # prefixes, last used, active
 curl -X POST "$PULSE/v1/keys" "\${auth[@]}" -d '{"name":"CI"}'  # new key, shown once
@@ -119,7 +133,8 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 					<a href="#pulse">Pulse: watch a job</a>
 					<a href="#prove">Prove the alert works</a>
 					<a href="#relay">Relay: run a job</a>
-					<a href="#together">Both together</a>
+					<a href="#lock">Lock: run it once</a>
+					<a href="#together">All three together</a>
 					<a href="#keys">Keys and quota</a>
 				</nav>
 
@@ -215,10 +230,32 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 					the endpoint idempotent.
 				</p>
 
-				<h2 id="together">Both together</h2>
+				<h2 id="lock">Lock: make sure it only runs once</h2>
 				<p>
-					Relay calling your endpoint and Pulse watching the result is the belt-and-braces setup: if
-					Relay itself stops calling, the missing ping still reaches you.
+					Acquiring returns 201 with a token, or 409 if somebody else holds it. Because
+					<code>curl -sf</code> fails on 409, the second instance just exits — and the
+					<code>trap</code> releases the lock however the script ends, crash included.
+				</p>
+				<pre><code>{lockAcquire}</code></pre>
+
+				<p>
+					For a job that runs longer than its lease, renew while you work rather than asking for a
+					huge TTL:
+				</p>
+				<pre><code>{lockRenew}</code></pre>
+
+				<p>See who holds what, without anyone's token being revealed:</p>
+				<pre><code>{lockStatus}</code></pre>
+				<p class="muted">
+					Only the holder can release or renew — a wrong token gets 409. The <code>fence</code>
+					number increases with every acquisition and never goes backwards; hand it to whatever you
+					are protecting if you need to reject a stalled holder that wakes up late.
+				</p>
+
+				<h2 id="together">All three together</h2>
+				<p>
+					Relay makes sure the job runs, Lock makes sure it runs once, and Pulse notices if it stops
+					running at all.
 				</p>
 				<pre><code>{both}</code></pre>
 

@@ -3,7 +3,7 @@
 
 export const SITE_TITLE = "nano-api";
 export const SITE_DESCRIPTION =
-	"Small, sharp APIs that do one thing. NanoPulse tells you when a job you depend on has stopped running. NanoRelay runs the job for you, on schedule, and tells you when that fails.";
+	"Small, sharp APIs that do one thing. NanoPulse tells you when a job has stopped running, NanoRelay runs it for you on schedule, and NanoLock stops two copies running at once.";
 
 export const CONTACT_EMAIL = "hello@nano-api.com";
 export const X_URL = "https://x.com/gautes";
@@ -11,6 +11,7 @@ export const X_HANDLE = "@gautes";
 export const GITHUB_URL = "https://github.com/gsmalano-creator/nano-pulse";
 export const PULSE_BASE = "https://pulse.nano-api.com";
 export const RELAY_BASE = "https://relay.nano-api.com";
+export const LOCK_BASE = "https://lock.nano-api.com";
 
 /**
  * Everything is free while the service is young, so there is no plan catalogue
@@ -51,5 +52,13 @@ export const SERVICES: Service[] = [
 		summary:
 			"The other half of Pulse: we call your endpoint on a schedule, with timezone-correct timing, retries and alerts when it fails.",
 		href: "/relay/",
+	},
+	{
+		name: "NanoLock",
+		status: "live",
+		host: "lock.nano-api.com",
+		summary:
+			"Stops two of them running at once. A lock with a lease, a token only the holder knows, and a fencing counter.",
+		href: "/lock/",
 	},
 ];

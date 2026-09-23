@@ -1,0 +1,200 @@
+---
+// Three workers, one job. Only one lane is lit at a time — the point of the
+// product, in one 12s CSS loop with no JavaScript.
+const lanes = [
+	{ worker: "worker-1", first: "holds it · fence 7", second: "released", firstState: "holds", secondState: "done" },
+	{ worker: "worker-2", first: "409 · waiting", second: "409 · waiting", firstState: "wait", secondState: "wait" },
+	{ worker: "worker-3", first: "409 · waiting", second: "holds it · fence 8", firstState: "wait", secondState: "holds" },
+];
+---
+
+<figure class="demo">
+	<figcaption class="head">
+		<code>POST /v1/locks/nightly-import</code>
+		<code class="ttl">ttl 60s</code>
+	</figcaption>
+
+	<ul class="lanes">
+		{
+			lanes.map((lane, index) => (
+				<li class="lane" style={`--i: ${index}`}>
+					<span class="who">{lane.worker}</span>
+					<span class="states">
+						<span class:list={["pill", lane.firstState, "phase-a"]}>{lane.first}</span>
+						<span class:list={["pill", lane.secondState, "phase-b"]}>{lane.second}</span>
+					</span>
+					<span class="track">
+						<span class:list={["fill", { "run-a": lane.firstState === "holds", "run-b": lane.secondState === "holds" }]} />
+					</span>
+				</li>
+			))
+		}
+	</ul>
+
+	<p class="note">One writer at a time. The other two are told who has it, and for how long.</p>
+</figure>
+
+<style>
+	.demo {
+		--loop: 12s;
+		margin: 0;
+		background: linear-gradient(180deg, var(--surface) 0%, #0d131b 100%);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		padding: 1.1em 1.2em 1.2em;
+		box-shadow: var(--box-shadow);
+	}
+	.head {
+		display: flex;
+		justify-content: space-between;
+		gap: 1em;
+		margin-bottom: 1.1em;
+		flex-wrap: wrap;
+	}
+	.head code {
+		background: none;
+		border: none;
+		padding: 0;
+		color: var(--muted);
+		font-size: 0.78rem;
+	}
+	.head .ttl {
+		color: var(--alive);
+	}
+
+	.lanes {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 0.75em;
+	}
+	.lane {
+		display: grid;
+		grid-template-columns: 5.5em 1fr;
+		grid-template-areas: "who states" "track track";
+		gap: 0.35em 0.7em;
+		align-items: center;
+		font-family: var(--mono);
+		font-size: 0.78rem;
+	}
+	.who {
+		grid-area: who;
+		color: var(--muted);
+	}
+	.states {
+		grid-area: states;
+		position: relative;
+		display: block;
+		height: 1.5em;
+	}
+	.pill {
+		position: absolute;
+		inset: 0;
+		display: inline-flex;
+		align-items: center;
+		opacity: 0;
+	}
+	.pill.holds {
+		color: var(--alive);
+	}
+	.pill.wait {
+		color: #fbbf5c;
+	}
+	.pill.done {
+		color: var(--muted);
+	}
+	.phase-a {
+		animation: phaseA var(--loop) infinite;
+	}
+	.phase-b {
+		animation: phaseB var(--loop) infinite;
+	}
+
+	.track {
+		grid-area: track;
+		height: 3px;
+		border-radius: 3px;
+		background: rgba(34, 48, 65, 0.8);
+		overflow: hidden;
+	}
+	.fill {
+		display: block;
+		height: 100%;
+		width: 0;
+		background: var(--alive);
+		border-radius: 3px;
+	}
+	.fill.run-a {
+		animation: fillA var(--loop) infinite;
+	}
+	.fill.run-b {
+		animation: fillB var(--loop) infinite;
+	}
+
+	.note {
+		margin: 1.2em 0 0;
+		font-size: 0.82rem;
+		color: var(--muted);
+	}
+
+	@keyframes phaseA {
+		0%,
+		44% {
+			opacity: 1;
+		}
+		48%,
+		100% {
+			opacity: 0;
+		}
+	}
+	@keyframes phaseB {
+		0%,
+		44% {
+			opacity: 0;
+		}
+		48%,
+		100% {
+			opacity: 1;
+		}
+	}
+	/* The bar fills while that worker holds the lease, then resets. */
+	@keyframes fillA {
+		0% {
+			width: 0;
+		}
+		42% {
+			width: 100%;
+		}
+		46%,
+		100% {
+			width: 0;
+		}
+	}
+	@keyframes fillB {
+		0%,
+		48% {
+			width: 0;
+		}
+		92%,
+		100% {
+			width: 100%;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.pill,
+		.fill {
+			animation: none;
+		}
+		.phase-a {
+			opacity: 1;
+		}
+		.phase-b {
+			opacity: 0;
+		}
+		.fill.run-a {
+			width: 60%;
+		}
+	}
+</style>
