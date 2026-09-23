@@ -21,6 +21,7 @@ Everything is free while the service is young, so there is no plan catalogue —
 | `/relay/` | NanoRelay: animated run log with a retry and an alert, the DST argument, failure behaviour |
 | `/lock/` | NanoLock: three lanes where only one is lit, the shell-script pattern, what the lease does and does not guarantee |
 | `/config/` | NanoConfig: a document changing under a poll log, ETag/If-Match/rollback |
+| `/count/` | NanoCount: a badge ticking up, the atomic-increment and no-key-badge arguments |
 | `/howto/` | Every service end to end in copy-paste curl |
 | `/pricing/` | Free for now: what that includes, why, and what happens when it changes |
 | `/about/` | Who runs it, how it is built, and what not to expect |

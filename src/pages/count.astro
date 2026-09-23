@@ -1,0 +1,180 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import CountDemo from "../components/CountDemo.astro";
+import { COUNT_BASE, SITE_TITLE } from "../consts";
+
+const increment = `curl -X POST "${COUNT_BASE}/v1/counters/downloads?label=downloads" \\
+  -H "Authorization: Bearer $NANO_API_KEY"
+# {"counter":{"value":1,"badge_url":"${COUNT_BASE}/b/pub_…svg", …}}`;
+
+const badge = `![downloads](${COUNT_BASE}/b/pub_….svg)`;
+
+const read = `curl -s ${COUNT_BASE}/b/pub_….json
+# {"name":"downloads","value":12300}`;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead
+			title={`NanoCount — ${SITE_TITLE}`}
+			description="Named counters that cannot lose an increment, with an SVG badge for your README."
+		/>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section class="hero">
+				<div>
+					<p class="eyebrow">nano-api / count</p>
+					<h1>Count it.<br /><span class="dim">Put the number in the README.</span></h1>
+					<p class="lede">
+						Named counters that never lose an increment, and an SVG badge anyone can embed —
+						without a key, and without exposing anything else.
+					</p>
+					<p class="cta">
+						<a class="button" href="/howto/#setup">Get a free API key</a>
+						<a class="button secondary" href="/howto/#count">Curl walkthrough</a>
+					</p>
+					<p class="fineprint muted">
+						Free, and signup is one unauthenticated <code>curl</code> — no form, no card, no wait.
+					</p>
+				</div>
+				<CountDemo />
+			</section>
+
+			<section class="band">
+				<h2>Increment from anywhere</h2>
+				<pre><code>{increment}</code></pre>
+				<p class="muted small">
+					<code>?by=5</code> to add more, <code>PUT</code> to set an exact value. The counter is
+					created on first use.
+				</p>
+			</section>
+
+			<section class="band">
+				<h2>Then paste one line</h2>
+				<pre><code>{badge}</code></pre>
+				<p class="muted small">
+					<code>?label=</code> and <code>?color=</code> override it per request. Or read the raw
+					number from a browser — the JSON endpoint is CORS-open:
+				</p>
+				<pre><code>{read}</code></pre>
+			</section>
+
+			<section class="band">
+				<h2>Three decisions</h2>
+				<ol class="steps">
+					<li>
+						<span class="n">1</span>
+						<h3>Increments are atomic</h3>
+						<p>
+							One upsert adds and returns. Two callers cannot read the same number and write it
+							back — the bug every hand-rolled counter has.
+						</p>
+					</li>
+					<li>
+						<span class="n">2</span>
+						<h3>The badge needs no key</h3>
+						<p>
+							GitHub fetches README images anonymously, so each counter carries an unguessable
+							public id that exposes that counter and nothing else.
+						</p>
+					</li>
+					<li>
+						<span class="n">3</span>
+						<h3>Reads never increment</h3>
+						<p>
+							A caching proxy in front of a hit counter either freezes it or inflates it. Count
+							what your code does, not what a cache does.
+						</p>
+					</li>
+				</ol>
+			</section>
+
+			<section class="band">
+				<h2>Pairs with the others</h2>
+				<p>
+					Count the rows an export wrote, then ping <a href="/pulse/">Pulse</a> when it finishes.
+					One number for the badge, one alert when the job stops.
+				</p>
+				<p class="cta">
+					<a class="button" href="/howto/">How to, in curl</a>
+					<a class="button secondary" href="/pricing/">What it costs</a>
+				</p>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	.hero {
+		display: grid;
+		grid-template-columns: 1.05fr 1fr;
+		gap: 2.5em;
+		align-items: center;
+		padding: 2em 0 1em;
+	}
+	.dim {
+		color: var(--muted);
+	}
+	.lede {
+		font-size: 1.1rem;
+		color: var(--muted);
+		max-width: 34em;
+	}
+	.cta {
+		display: flex;
+		gap: 0.7em;
+		flex-wrap: wrap;
+		margin: 1.4em 0 0.6em;
+	}
+	.fineprint {
+		font-size: 0.85rem;
+	}
+	.band {
+		padding: 3em 0 0;
+	}
+	.band > p {
+		max-width: 46em;
+		color: var(--muted);
+	}
+	.small {
+		font-size: 0.85rem;
+	}
+	.steps {
+		list-style: none;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.2em;
+		margin: 1.4em 0 0;
+		padding: 0;
+	}
+	.steps li {
+		border-top: 2px solid var(--border);
+		padding-top: 1em;
+	}
+	.steps .n {
+		font-family: var(--mono);
+		color: var(--alive);
+		font-size: 0.8rem;
+	}
+	.steps h3 {
+		font-size: 1.05rem;
+		margin: 0.2em 0 0.4em;
+	}
+	.steps p {
+		color: var(--muted);
+		font-size: 0.93rem;
+		margin: 0;
+	}
+	@media (max-width: 860px) {
+		.hero,
+		.steps {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

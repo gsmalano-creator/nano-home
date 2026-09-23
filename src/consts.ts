@@ -20,6 +20,7 @@ export const PULSE_BASE = "https://pulse.nano-api.com";
 export const RELAY_BASE = "https://relay.nano-api.com";
 export const LOCK_BASE = "https://lock.nano-api.com";
 export const CONFIG_BASE = "https://configmaps.nano-api.com";
+export const COUNT_BASE = "https://count.nano-api.com";
 
 /**
  * Everything is free while the service is young, so there is no plan catalogue
@@ -68,6 +69,14 @@ export const SERVICES: Service[] = [
 		summary:
 			"Small JSON documents you can change without a deploy. Versioned, conditionally writable, cheap to poll.",
 		href: "/config/",
+	},
+	{
+		name: "NanoCount",
+		status: "live",
+		host: "count.nano-api.com",
+		summary:
+			"Counters that never lose an increment, with an SVG badge anyone can embed in a README.",
+		href: "/count/",
 	},
 	{
 		name: "NanoLock",

@@ -1,0 +1,147 @@
+---
+// A badge that keeps counting: three increments, then the value settles.
+const steps = [
+	{ call: "POST /v1/counters/downloads", value: "1" },
+	{ call: "POST /v1/counters/downloads?by=5", value: "6" },
+	{ call: "POST /v1/counters/downloads?by=12", value: "18" },
+];
+---
+
+<figure class="demo">
+	<div class="badge" aria-label="downloads badge">
+		<span class="label">downloads</span>
+		<span class="value">
+			{steps.map((step, index) => <span class="v" style={`--i: ${index}`}>{step.value}</span>)}
+		</span>
+	</div>
+
+	<ol class="log">
+		{
+			steps.map((step, index) => (
+				<li style={`--i: ${index}`}>
+					<span class="c">{step.call}</span>
+					<span class="r">→ {step.value}</span>
+				</li>
+			))
+		}
+	</ol>
+
+	<p class="note">Read it anywhere. Only your code increments it.</p>
+</figure>
+
+<style>
+	.demo {
+		--loop: 9s;
+		margin: 0;
+		background: linear-gradient(180deg, var(--surface) 0%, #0d131b 100%);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		padding: 1.4em 1.2em 1.2em;
+		box-shadow: var(--box-shadow);
+	}
+
+	.badge {
+		display: inline-flex;
+		font-family: var(--mono);
+		font-size: 0.8rem;
+		border-radius: 5px;
+		overflow: hidden;
+		margin-bottom: 1.3em;
+	}
+	.label {
+		background: #1b2430;
+		color: #c8d4e0;
+		padding: 0.35em 0.7em;
+	}
+	.value {
+		position: relative;
+		background: var(--alive);
+		color: #08131a;
+		font-weight: 700;
+		padding: 0.35em 0.7em;
+		min-width: 2.6em;
+		text-align: center;
+	}
+	.v {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		opacity: 0;
+		animation: tick var(--loop) infinite;
+		animation-delay: calc(var(--i) * 2s);
+	}
+
+	.log {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		font-family: var(--mono);
+		font-size: 0.74rem;
+		display: grid;
+		gap: 0.3em;
+	}
+	.log li {
+		display: flex;
+		justify-content: space-between;
+		gap: 1em;
+		padding-bottom: 0.3em;
+		border-bottom: 1px solid rgba(34, 48, 65, 0.6);
+		opacity: 0;
+		animation: appear var(--loop) infinite;
+		animation-delay: calc(var(--i) * 2s);
+	}
+	.c {
+		color: var(--muted);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.r {
+		color: var(--alive);
+	}
+	.note {
+		margin: 1.2em 0 0;
+		font-size: 0.8rem;
+		color: var(--muted);
+	}
+
+	/* Each value holds until the next one replaces it. */
+	@keyframes tick {
+		0% {
+			opacity: 0;
+		}
+		3%,
+		20% {
+			opacity: 1;
+		}
+		23%,
+		100% {
+			opacity: 0;
+		}
+	}
+	@keyframes appear {
+		0% {
+			opacity: 0;
+		}
+		3%,
+		88% {
+			opacity: 1;
+		}
+		95%,
+		100% {
+			opacity: 0;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.v,
+		.log li {
+			animation: none;
+			opacity: 1;
+		}
+		.v:not(:last-child) {
+			opacity: 0;
+		}
+	}
+</style>

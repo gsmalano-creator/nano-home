@@ -2,7 +2,7 @@
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import { CONFIG_BASE, CONTACT_EMAIL, LOCK_BASE, SERVICES, SIGNUP_CURL, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
+import { CONFIG_BASE, CONTACT_EMAIL, COUNT_BASE, LOCK_BASE, SERVICES, SIGNUP_CURL, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
 
 const relay = SERVICES.find((s) => s.name === "NanoRelay");
 const relayIsLive = relay?.status === "live";
@@ -12,6 +12,7 @@ export PULSE=https://pulse.nano-api.com
 export RELAY=https://relay.nano-api.com
 export LOCK=https://lock.nano-api.com
 export CONFIG=https://configmaps.nano-api.com
+export COUNT=https://count.nano-api.com
 auth=(-H "Authorization: Bearer $KEY" -H 'content-type: application/json')`;
 
 const firstPing = `curl -X POST "$PULSE/v1/ping/nightly-backup?interval=86400&grace=3600" "\${auth[@]}"`;
@@ -117,6 +118,17 @@ curl -s "$CONFIG/v1/configs/checkout/keys/maintenance" "\${auth[@]}"`;
 const configRollback = `curl -s "$CONFIG/v1/configs/checkout/revisions" "\${auth[@]}" | jq '.revisions[] | {version, note}'
 curl -X POST "$CONFIG/v1/configs/checkout/rollback" "\${auth[@]}" -d '{"to": 7}'`;
 
+const countUp = `curl -X POST "$COUNT/v1/counters/downloads?label=downloads" "\${auth[@]}"
+# {"counter":{"value":1,"badge_url":"$COUNT/b/pub_…svg", …}}
+
+curl -X POST "$COUNT/v1/counters/downloads?by=5" "\${auth[@]}"    # 6
+curl -X PUT  "$COUNT/v1/counters/downloads?value=12300" "\${auth[@]}"`;
+
+const countBadge = `![downloads]($COUNT/b/pub_….svg)
+
+# or read the number from a browser — CORS is open on this one
+curl -s "$COUNT/b/pub_….json"`;
+
 const keys = `curl -s "$PULSE/v1/keys" "\${auth[@]}" | jq            # prefixes, last used, active
 curl -X POST "$PULSE/v1/keys" "\${auth[@]}" -d '{"name":"CI"}'  # new key, shown once
 curl -X DELETE "$PULSE/v1/keys/key_abc123" \\
@@ -151,6 +163,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 					<a href="#relay">Relay: run a job</a>
 					<a href="#lock">Lock: run it once</a>
 					<a href="#config">Config: change it without a deploy</a>
+					<a href="#count">Count: a number for the README</a>
 					<a href="#together">All of them together</a>
 					<a href="#keys">Keys and quota</a>
 				</nav>
@@ -283,6 +296,18 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 				<p class="muted">
 					Restoring v7 becomes v9, never v7 again. A client caching by version number can then
 					trust that one number means one thing forever.
+				</p>
+
+				<h2 id="count">Count: a number for the README</h2>
+				<p>Counters are created on first use, and increments are atomic:</p>
+				<pre><code>{countUp}</code></pre>
+
+				<p>The badge needs no key, so it works where a README image is fetched anonymously:</p>
+				<pre><code>{countBadge}</code></pre>
+				<p class="muted">
+					Reads never increment — a caching proxy in front of a hit counter would either freeze the
+					number or inflate it. <code>?label=</code> and <code>?color=</code> restyle the badge per
+					request.
 				</p>
 
 				<h2 id="together">All of them together</h2>

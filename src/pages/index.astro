@@ -18,6 +18,8 @@ const snippets: Record<string, string> = {
 # 201 -> you have it   409 -> someone else does`,
 	NanoConfig: `curl -X PATCH $CONFIG/v1/configs/checkout \\
   -d '{"maintenance": true}'   # no deploy, no restart`,
+	NanoCount: `curl -X POST $COUNT/v1/counters/downloads
+# then paste the badge URL into your README`,
 };
 ---
 

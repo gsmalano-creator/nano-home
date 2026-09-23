@@ -59,10 +59,8 @@ Checklist for a candidate:
 
 ## Candidates, in the order I would build them
 
-- **NanoLock** — `flock` as a service. `POST /v1/locks/:name?ttl=60` returns 200 if you got it, 409
-  if someone holds it. Solves "two instances ran the import at once", is surprisingly hard to get
-  right yourself, and pairs directly with Relay and with any Kubernetes CronJob that can overlap.
-  The guarantee *is* the product.
+(NanoLock and NanoConfig came off this list on 2026-09-23. Both shipped.)
+
 - **NanoCount** — increment and read named counters. Download counts, likes, feature usage.
   Built-in distribution: serve an SVG badge and every README showing the number is an advert.
 - **Form endpoint** — somewhere a static site can POST its HTML form, stored and forwarded. Probably
@@ -70,8 +68,6 @@ Checklist for a candidate:
   waitlist. Formspree and Tally live off it; the cheap end is open.
 - **Idempotency keys** — "have I seen this before?" `POST /v1/seen/:key` answers atomically with a
   TTL. Every webhook consumer needs it and builds it with a table and a unique index.
-- **Kill switch / config flags** — a tiny JSON per key, read at the edge. Everyone reinvents this
-  badly with an environment variable that needs a redeploy.
 - **Email validation** — syntax, MX lookup, disposable-domain list. The DoH code already exists in
   Relay's URL guard, and the incumbents charge absurd money for it.
 - **Business-day calendar** — is 2 January a banking day in Norway? Static data, updated once a
