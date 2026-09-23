@@ -32,17 +32,16 @@ const create = `curl -X POST ${RELAY_BASE}/v1/schedules \\
 					<p class="eyebrow">nano-api / relay</p>
 					<h1>Cron, without<br /><span class="dim">a machine to keep alive.</span></h1>
 					<p class="lede">
-						NanoRelay calls your endpoint on a schedule — in your timezone, with retries, timeouts
-						and a Slack alert when it starts failing. Nothing of yours has to be running in
-						between.
+						We call your endpoint on a schedule — in your timezone, with retries and a Slack alert
+						when it starts failing.
 					</p>
 					<p class="cta">
 						<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get a free API key</a>
 						<a class="button secondary" href="/howto/#relay">Curl walkthrough</a>
 					</p>
 					<p class="fineprint muted">
-						Free while the service is young. Mail <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-						or ping <a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X.
+						Free. Mail <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or ping
+						<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X.
 					</p>
 				</div>
 				<RelayDemo />
@@ -52,93 +51,71 @@ const create = `curl -X POST ${RELAY_BASE}/v1/schedules \\
 				<h2>One call to set it up</h2>
 				<pre><code>{create}</code></pre>
 				<p class="muted small">
-					Add <code>body</code>, <code>headers</code>, <code>timeout_seconds</code>,
-					<code>max_attempts</code> and <code>alert_webhook_url</code> as needed. Run it on demand
-					with <code>POST /v1/schedules/:slug/run</code> — useful before you trust it.
+					Optional: <code>body</code>, <code>headers</code>, <code>timeout_seconds</code>,
+					<code>max_attempts</code>, <code>alert_webhook_url</code>. Test it with
+					<code>POST /v1/schedules/:slug/run</code>.
 				</p>
 			</section>
 
 			<section class="band">
 				<h2>03:00 means 03:00, in March and in November</h2>
 				<p>
-					Platform crons run in UTC. That means a job you set for 03:00 quietly moves to 02:00 or
-					04:00 twice a year, and you find out from a report that ran an hour into the wrong day.
-					Relay evaluates the expression in the IANA zone you name.
+					Platform crons run in UTC, so a 03:00 job quietly moves twice a year. Relay evaluates the
+					expression in the zone you name.
 				</p>
 				<div class="two">
 					<div class="card">
 						<p class="tag">UTC-only cron</p>
 						<ul class="plain">
-							<li>Drifts an hour twice a year against local time</li>
-							<li>A nonexistent local hour in spring silently skips the run</li>
-							<li>An ambiguous hour in autumn can run the job twice</li>
+							<li>Drifts an hour twice a year</li>
+							<li>Skips the run when the local hour does not exist</li>
+							<li>Can run twice on the ambiguous hour</li>
 						</ul>
 					</div>
 					<div class="card alive-edge">
 						<p class="tag live">NanoRelay</p>
 						<ul class="plain">
-							<li><code>0 3 * * *</code> in <code>Europe/Oslo</code> stays at 03:00 all year</li>
-							<li>A missing local hour runs just after the gap instead of being skipped</li>
+							<li><code>0 3 * * *</code> in <code>Europe/Oslo</code> stays at 03:00</li>
+							<li>A missing hour runs just after the gap</li>
 							<li>An ambiguous hour runs once, on its first instant</li>
 						</ul>
 					</div>
 				</div>
-				<p class="muted small">
-					All three behaviours are pinned by tests in the repo, because this is exactly the kind of
-					thing that breaks silently and is discovered a season later.
-				</p>
+				<p class="muted small">All three are pinned by tests in the repo.</p>
 			</section>
 
 			<section class="band">
-				<h2>What happens when the call fails</h2>
+				<h2>When the call fails</h2>
 				<ol class="steps">
 					<li>
 						<span class="n">1</span>
-						<h3>Retry, briefly</h3>
-						<p>
-							Up to three attempts with 2s and 6s backoff, each bounded by your
-							<code>timeout_seconds</code>. A slow endpoint is a failure, not a hang.
-						</p>
+						<h3>Retry</h3>
+						<p>Three attempts, 2s and 6s backoff, each bounded by your timeout.</p>
 					</li>
 					<li>
 						<span class="n">2</span>
 						<h3>Alert on the change</h3>
-						<p>
-							One alert when it starts failing, one when it recovers. Not one per failed run, so a
-							broken endpoint cannot flood your channel.
-						</p>
+						<p>Once when it breaks, once when it recovers. Never one per failed run.</p>
 					</li>
 					<li>
 						<span class="n">3</span>
 						<h3>Keep the evidence</h3>
-						<p>
-							Every run is stored with status code, duration, attempts and the first part of the
-							response body, so you can see what the endpoint actually said.
-						</p>
+						<p>Status code, duration, attempts, and the start of the response body.</p>
 					</li>
 				</ol>
-			</section>
-
-			<section class="band">
-				<h2>Two things worth knowing</h2>
-				<p>
-					<strong>Delivery is at-least-once.</strong> A timed-out call may still have landed, so make
-					the endpoint idempotent. Every request carries <code>X-NanoRelay-Run-Id</code> so you can
-					deduplicate.
-				</p>
-				<p>
-					<strong>Missed slots are skipped, not replayed.</strong> After an outage the next run is
-					computed from now, so a backlog never stampedes your endpoint with a day of catch-up
-					calls.
+				<p class="muted small">
+					Delivery is at-least-once, so make the endpoint idempotent — every request carries
+					<code>X-NanoRelay-Run-Id</code>. Missed slots are skipped, not replayed: no catch-up
+					stampede after an outage.
 				</p>
 			</section>
 
 			<section class="band">
-				<h2>Pair it with Pulse</h2>
+				<h2>Pairs with the others</h2>
 				<p>
-					When a scheduler dies, the symptom is silence — the exact problem
-					<a href="/pulse/">NanoPulse</a> exists to catch. Put a ping inside the job Relay calls, and
-					the two watch each other.
+					Take a <a href="/lock/">Lock</a> at the top of the job and ping
+					<a href="/pulse/">Pulse</a> at the end. Then a scheduler that dies quietly is still an
+					alert.
 				</p>
 				<p class="cta">
 					<a class="button" href="/howto/">How to, in curl</a>

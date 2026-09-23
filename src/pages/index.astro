@@ -27,8 +27,8 @@ const snippets: Record<string, string> = {
 				<p class="eyebrow">nano-api</p>
 				<h1>Small, sharp APIs for the jobs <span class="dim">nobody is watching.</span></h1>
 				<p class="lede">
-					Two services, one API key, no dashboard to learn. One tells you when a job you depend on
-					has stopped running. The other runs the job for you and tells you when that fails.
+					One API key. No dashboard. Each service does one thing you would otherwise build and
+					maintain yourself.
 				</p>
 				<p class="cta">
 					<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get a free API key</a>
@@ -36,8 +36,7 @@ const snippets: Record<string, string> = {
 				</p>
 				<p class="free">
 					<span class="tag live">Free</span>
-					Everything on nano-api is free while the service is young — both services, every feature,
-					no card. <a href="/pricing/">Here is what that means.</a>
+					Everything is free while the service is young. <a href="/pricing/">What that means.</a>
 				</p>
 			</section>
 
@@ -59,24 +58,17 @@ const snippets: Record<string, string> = {
 			</section>
 
 			<section class="band">
-				<h2>What they have in common</h2>
+				<h2>In every plan</h2>
 				<ul class="shared">
 					{WHAT_YOU_GET.map((item) => <li>{item}</li>)}
 				</ul>
-				<p class="muted">
-					Both run on Cloudflare's edge with a serverless database, which is why the free tier can
-					exist: one more monitor or schedule costs close to nothing, so there is no reason to meter
-					you into a corner.
-				</p>
 			</section>
 
 			<section class="band">
 				<h2>They cover each other</h2>
 				<p>
-					Put a Pulse ping inside the job Relay calls, and take a Lock at the top of it. If the
-					endpoint breaks, Relay tells you. If Relay itself ever stops calling, the missing ping
-					tells you. And if a retry or a second instance overlaps the run, the lock refuses it
-					instead of letting two copies fight over the same rows.
+					Relay runs the job. Lock keeps it to one copy. Pulse notices if it stops running at all —
+					including when Relay is the thing that stopped.
 				</p>
 				<p class="cta">
 					<a class="button" href="/pulse/">NanoPulse</a>
@@ -88,11 +80,10 @@ const snippets: Record<string, string> = {
 			<section class="band">
 				<h2>Who runs it</h2>
 				<p>
-					One person, alongside a day job. That is the reason for the small surface, the honest
-					limits and the lack of a pricing page with four tiers on it. Questions go to
-					<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or
-					<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X, and reach the person
-					who wrote the code. <a href="/about/">More about that.</a>
+					One person, alongside a day job — which is the reason for the small surface and the honest
+					limits. <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>,
+					<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X, or
+					<a href="/about/">more about that</a>.
 				</p>
 			</section>
 		</main>

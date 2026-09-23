@@ -3,11 +3,12 @@
 Marketing site and docs for the [nano-api](https://nano-api.com) family of single-purpose APIs.
 Astro, deployed to Cloudflare Workers.
 
-Two live services, both in the `nano-api` repo:
+The live services, all in the `nano-api` repo:
 
 - **NanoPulse** (`pulse.nano-api.com`) tells you when a job you depend on has stopped running.
 - **NanoRelay** (`relay.nano-api.com`) calls your endpoint on a schedule and tells you when that
   fails.
+- **NanoLock** (`lock.nano-api.com`) stops two copies of a job running at once.
 
 Everything is free while the service is young, so there is no plan catalogue — see `/pricing/`.
 
@@ -15,11 +16,11 @@ Everything is free while the service is young, so there is no plan catalogue —
 
 | Route | Content |
 | --- | --- |
-| `/` | The umbrella: what the two services are, what they share, and how they cover each other |
+| `/` | The umbrella: what the services are, what they share, and how they cover each other |
 | `/pulse/` | NanoPulse: animated CSS demo of a heartbeat going flat, the crontab one-liner, uptime-vs-heartbeat |
 | `/relay/` | NanoRelay: animated run log with a retry and an alert, the DST argument, failure behaviour |
 | `/lock/` | NanoLock: three lanes where only one is lit, the shell-script pattern, what the lease does and does not guarantee |
-| `/howto/` | Both services end to end in copy-paste curl |
+| `/howto/` | Every service end to end in copy-paste curl |
 | `/pricing/` | Free for now: what that includes, why, and what happens when it changes |
 | `/about/` | Who runs it, how it is built, and what not to expect |
 

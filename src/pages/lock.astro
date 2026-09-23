@@ -33,17 +33,16 @@ trap 'curl -sf -X DELETE "${LOCK_BASE}/v1/locks/nightly-import?token=$TOKEN" \\
 					<p class="eyebrow">nano-api / lock</p>
 					<h1>Two instances woke up.<br /><span class="dim">Only one should run the job.</span></h1>
 					<p class="lede">
-						NanoLock is <code>flock</code> over HTTP. One call says whether you got it, and nobody
-						else gets it until you let go or your lease runs out. No Redis to run, no table to
-						maintain, no clever SQL to get subtly wrong.
+						<code>flock</code> over HTTP. One call says whether you got it, and nobody else gets it
+						until you let go or your lease runs out.
 					</p>
 					<p class="cta">
 						<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get a free API key</a>
 						<a class="button secondary" href="/howto/#lock">Curl walkthrough</a>
 					</p>
 					<p class="fineprint muted">
-						Free while the service is young. Mail <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-						or ping <a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X.
+						Free. Mail <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or ping
+						<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X.
 					</p>
 				</div>
 				<LockDemo />
@@ -53,11 +52,10 @@ trap 'curl -sf -X DELETE "${LOCK_BASE}/v1/locks/nightly-import?token=$TOKEN" \\
 				<h2>The whole thing, in a shell script</h2>
 				<pre><code>{usage}</code></pre>
 				<p class="muted small">
-					<code>curl -sf</code> exits non-zero on 409, so the second instance simply stops. The
-					<code>trap</code> releases the lock however the script ends, crash included. Note the
-					response is captured before <code>jq</code> touches it: in a pipeline the
-					<code>||</code> would test <em>jq's</em> exit status, not curl's, and a refused lock
-					would sail straight through into running the job.
+					<code>curl -sf</code> exits non-zero on 409, so the second instance stops. The
+					<code>trap</code> releases the lock however the script ends, crash included. Capture the
+					response before <code>jq</code> sees it: in a pipeline, <code>||</code> would test jq's
+					exit status, not curl's.
 				</p>
 			</section>
 
@@ -67,18 +65,18 @@ trap 'curl -sf -X DELETE "${LOCK_BASE}/v1/locks/nightly-import?token=$TOKEN" \\
 					<div class="card">
 						<p class="tag">Without a lock</p>
 						<ul class="plain">
-							<li>Two pods wake at 03:00 and both run the import</li>
-							<li>A slow run overlaps the next scheduled one</li>
+							<li>Two pods wake at 03:00, both run the import</li>
+							<li>A slow run overlaps the next one</li>
 							<li>A retry fires while the original is still working</li>
-							<li>You add a database row as a flag, and get the race wrong</li>
+							<li>You add a flag column and get the race wrong</li>
 						</ul>
 					</div>
 					<div class="card alive-edge">
 						<p class="tag live">With NanoLock</p>
 						<ul class="plain">
-							<li>One HTTP call decides, atomically, who proceeds</li>
-							<li>The lease expires on its own if the holder dies</li>
-							<li>Only the holder can release it, so nobody frees someone else's lock</li>
+							<li>One atomic call decides who proceeds</li>
+							<li>The lease expires by itself if the holder dies</li>
+							<li>Only the holder can release it</li>
 							<li>You can see who holds what, and until when</li>
 						</ul>
 					</div>
@@ -88,35 +86,30 @@ trap 'curl -sf -X DELETE "${LOCK_BASE}/v1/locks/nightly-import?token=$TOKEN" \\
 			<section class="band">
 				<h2>What the guarantee is — and is not</h2>
 				<p>
-					Acquiring is a single atomic write that only overwrites a lease that has already expired.
-					Two callers arriving in the same millisecond cannot both win: one gets 201, the other gets
-					409. Twenty parallel requests against a fresh lock produce exactly one winner, which is a
-					test in the repo rather than a claim on a marketing page.
+					Acquiring is a single atomic write that only overwrites an expired lease. Two callers in
+					the same millisecond cannot both win; twenty parallel requests produce exactly one, which
+					is a test in the repo rather than a claim on a page.
 				</p>
 				<p>
-					But a lease is not consensus, and you should know the failure it cannot prevent: if your
-					process stalls past its TTL — a long garbage collection, a suspended VM — the lease
-					expires, somebody else legitimately acquires, and for a moment two processes both believe
-					they hold the lock.
+					A lease is not consensus. Stall past your TTL — long GC, suspended VM — and someone else
+					legitimately acquires while you still think you hold it.
 				</p>
 				<p>
-					That is what the <strong>fence</strong> is for. Every acquisition gets a number that only
-					ever increases. Hand it to whatever you are protecting, have that remember the highest
-					number it has seen, and a stalled holder waking up late is rejected on arrival. It is the
-					difference between a lock that usually works and one you can reason about.
+					That is what <strong>fence</strong> is for: a number that only ever increases. Give it to
+					whatever you are protecting, have that reject anything older, and a late holder is turned
+					away on arrival.
 				</p>
 				<p class="muted small">
-					Practical advice, in order: renew while you work, keep the TTL above your worst-case
-					runtime, and use the fence where being wrong would actually cost something.
+					In order of importance: renew while you work, keep the TTL above your worst-case runtime,
+					use the fence where being wrong would cost something.
 				</p>
 			</section>
 
 			<section class="band">
-				<h2>Pairs with the other two</h2>
+				<h2>Pairs with the others</h2>
 				<p>
-					Take a lock at the top of the job <a href="/relay/">NanoRelay</a> calls, and ping
-					<a href="/pulse/">NanoPulse</a> when it finishes. Relay makes sure it runs, Lock makes sure
-					it runs once, and Pulse notices if it stops running at all.
+					Lock the job <a href="/relay/">Relay</a> calls, ping <a href="/pulse/">Pulse</a> when it
+					finishes. Runs, runs once, and you hear about it if it stops.
 				</p>
 				<p class="cta">
 					<a class="button" href="/howto/">How to, in curl</a>

@@ -18,54 +18,43 @@ import { CONTACT_EMAIL, GITHUB_URL, SITE_TITLE, X_HANDLE, X_URL } from "../const
 		<main>
 			<div class="page">
 				<p class="eyebrow">About</p>
-				<h1>A collection of small precise tools.</h1>
+				<h1>One person, small tools, no roadmap theatre.</h1>
 
 				<p>
-					nano-api is a family of single-purpose APIs. Each one lives on its own subdomain, takes one
-					API key, and does one job you would otherwise have to run a server for. The first is
-					<strong>NanoPulse</strong>: it tells you when a job that is supposed to run has quietly
-					stopped running.
+					nano-api is a family of single-purpose APIs. Each one lives on its own subdomain, takes
+					one API key, and does a job you would otherwise run a server for.
 				</p>
 
 				<h2>How it is built</h2>
 				<p>
-					Cloudflare Workers at the edge, D1 for storage, and a scheduled trigger that does the
-					counting. No servers, no containers, no queue to babysit. That is why the free plan can
-					exist: the marginal cost of one more monitor is close to nothing, so there is no reason to
-					meter you into a corner.
+					Cloudflare Workers at the edge, D1 for storage, a scheduled trigger for the background
+					work. No servers, no containers, no queue to babysit — which is why the free tier can
+					exist at all.
 				</p>
 				<p>
-					API keys are stored as SHA-256 hashes and never in clear text — if the database leaked
-					tomorrow, nobody could ping as you. Keys are yours to rotate and revoke.
+					API keys are stored as SHA-256 hashes, never in clear text. Rotate and revoke them
+					yourself, without asking me.
 				</p>
 
-				<h2>What you can expect</h2>
+				<h2>What to expect</h2>
 				<ul>
 					<li>Answers from the person who wrote the code, usually the same day.</li>
-					<li>Honest limits. If something is not built, the page says so instead of hinting.</li>
-					<li>
-						No dark patterns: no annual-only discounts hiding the monthly price, no "contact sales"
-						wall in front of the numbers.
-					</li>
-					<li>
-						No deletion of your data as a retention tactic. Delete a monitor and it is gone,
-						including its history.
-					</li>
+					<li>Honest limits: if something is not built, the page says so.</li>
+					<li>No dark patterns, and no "contact sales" wall in front of the numbers.</li>
+					<li>Delete a monitor and it is gone, history included.</li>
 				</ul>
 
-				<h2>What you should not expect</h2>
+				<h2>What not to expect</h2>
 				<p>
-					An enterprise SLA, phone support, or a status page with nine nines. This is a small,
-					carefully built service run by one person alongside a day job. For monitoring where a
-					missed alert has serious consequences, run two providers — I would tell a friend the same
-					thing.
+					An enterprise SLA, phone support, or nine nines. Where a missed alert has serious
+					consequences, run two providers — I would tell a friend the same thing.
 				</p>
 
 				<h2>Get in touch</h2>
 				<p>
-					<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> for keys, questions, invoices and
-					bug reports, or <a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X if that
-					is easier. Either way it reaches the person who wrote the code.
+					<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or
+					<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X. Code on
+					<a href={GITHUB_URL} rel="noopener" target="_blank">GitHub</a>.
 				</p>
 			</div>
 		</main>

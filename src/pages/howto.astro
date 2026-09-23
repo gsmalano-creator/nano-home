@@ -123,10 +123,9 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 		<main>
 			<div class="page">
 				<p class="eyebrow">How to</p>
-				<h1>Both services, end to end, in curl.</h1>
+				<h1>Every service, end to end, in curl.</h1>
 				<p class="lede">
-					Everything below is copy-paste. There is no dashboard and no SDK — if you can run
-					<code>curl</code>, you have the full product.
+					Copy-paste, all of it. No dashboard, no SDK — <code>curl</code> is the whole product.
 				</p>
 
 				<nav class="toc">
@@ -135,36 +134,33 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 					<a href="#prove">Prove the alert works</a>
 					<a href="#relay">Relay: run a job</a>
 					<a href="#lock">Lock: run it once</a>
-					<a href="#together">All three together</a>
+					<a href="#together">All of them together</a>
 					<a href="#keys">Keys and quota</a>
 				</nav>
 
 				<h2 id="setup">Setup</h2>
 				<p>
-					Get a key by mailing <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or pinging
-					<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X. Then, in the shell you
-					are about to work in:
+					Get a key from <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or
+					<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X, then:
 				</p>
 				<pre><code>{setup}</code></pre>
 				<p class="muted">
-					Both hostnames serve the same API, so <code>$PULSE</code> and <code>$RELAY</code> are
-					interchangeable. They are separate only so the URLs read correctly in your own scripts.
+					Every hostname serves the same API, so these variables are interchangeable. They exist
+					only so the URLs read correctly in your own scripts.
 				</p>
 
 				<h2 id="pulse">Pulse: get told when a job stops running</h2>
 				<p>
-					The first ping creates the monitor. <code>interval</code> is how often you expect it,
-					<code>grace</code> is how late it may be before we call it down — both in seconds, and
-					both only read when the monitor is created.
+					The first ping creates the monitor. <code>interval</code> is how often you expect it and
+					<code>grace</code> is how late it may be, in seconds, read only at creation.
 				</p>
 				<pre><code>{firstPing}</code></pre>
 
 				<p>In real life that line lives at the end of the job:</p>
 				<pre><code>{crontab}</code></pre>
 				<p class="muted">
-					The <code>&amp;&amp;</code> is the whole design. If the script exits non-zero the ping
-					never happens, the deadline passes, and you hear about it. You never have to remember to
-					report failures — failure is the default.
+					The <code>&amp;&amp;</code> is the design: a failed script never pings, the deadline
+					passes, you hear about it. Failure is the default.
 				</p>
 
 				<p>A ping can carry up to 2 KB of context, which shows up in the monitor's history:</p>
@@ -187,14 +183,13 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 
 				<h2 id="prove">Prove the alert actually works</h2>
 				<p>
-					Worth doing once, on the day you set it up, rather than discovering the webhook was wrong
-					during a real outage. <code>/v1/checks/run</code> is the same sweep the cron runs every
-					minute, triggered by hand so you do not have to wait for the window to pass on its own:
+					Do this once, on setup day — not during a real outage. <code>/v1/checks/run</code> is the
+					same sweep the cron runs, triggered by hand:
 				</p>
 				<pre><code>{proveIt}</code></pre>
 				<p class="muted">
-					Then check <code>recent_events</code> on the monitor: <code>notified: true</code> means the
-					receiver acknowledged the alert with a 2xx. <code>false</code> means it was not delivered.
+					<code>notified: true</code> in <code>recent_events</code> means the receiver answered 2xx.
+					<code>false</code> means it never arrived.
 				</p>
 
 				<h2 id="relay">Relay: have the job run for you</h2>
@@ -208,9 +203,9 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 					)
 				}
 				<p>
-					A schedule is a cron expression, a timezone and a request. The timezone is the point:
-					<code>0 3 * * *</code> in <code>Europe/Oslo</code> stays at 03:00 local across daylight
-					saving, instead of drifting an hour twice a year the way a UTC-only cron does.
+					A cron expression, a timezone and a request. The timezone is the point:
+					<code>0 3 * * *</code> in <code>Europe/Oslo</code> stays at 03:00 across daylight saving,
+					where a UTC-only cron drifts.
 				</p>
 				<pre><code>{createSchedule}</code></pre>
 
@@ -225,58 +220,48 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 				<pre><code>{pauseSchedule}</code></pre>
 
 				<p class="muted">
-					A failing run is retried up to <code>max_attempts</code> (max 3) with 2s and 6s backoff.
-					You are alerted on the transition into failure and again on recovery — not once per failed
-					run. Requests carry <code>X-NanoRelay-Run-Id</code>, and delivery is at-least-once, so make
-					the endpoint idempotent.
+					Up to 3 attempts with 2s and 6s backoff. Alerts on transitions only. Delivery is
+					at-least-once and every request carries <code>X-NanoRelay-Run-Id</code>, so make the
+					endpoint idempotent.
 				</p>
 
 				<h2 id="lock">Lock: make sure it only runs once</h2>
 				<p>
-					Acquiring returns 201 with a token, or 409 if somebody else holds it. Because
-					<code>curl -sf</code> exits non-zero on 409, the second instance just stops — and the
-					<code>trap</code> releases the lock however the script ends, crash included. Capture the
-					response before parsing it: if you pipe curl into <code>jq</code>, the <code>||</code>
-					checks jq's exit status rather than curl's, and a refused lock silently becomes an empty
+					201 with a token, or 409 if somebody else holds it. <code>curl -sf</code> exits non-zero
+					on 409 so the second instance stops, and <code>trap</code> releases however the script
+					ends. Capture the response before parsing: piped into <code>jq</code>, the
+					<code>||</code> would test jq's exit status, and a refused lock would become an empty
 					token and a job that runs anyway.
 				</p>
 				<pre><code>{lockAcquire}</code></pre>
 
-				<p>
-					For a job that runs longer than its lease, renew while you work rather than asking for a
-					huge TTL:
-				</p>
+				<p>Longer than the lease? Renew while you work instead of asking for a huge TTL:</p>
 				<pre><code>{lockRenew}</code></pre>
 
 				<p>See who holds what, without anyone's token being revealed:</p>
 				<pre><code>{lockStatus}</code></pre>
 				<p class="muted">
-					Only the holder can release or renew — a wrong token gets 409. The <code>fence</code>
-					number increases with every acquisition and never goes backwards; hand it to whatever you
-					are protecting if you need to reject a stalled holder that wakes up late.
+					Only the holder can release or renew; a wrong token gets 409. <code>fence</code> only ever
+					increases — hand it downstream to reject a stalled holder that wakes up late.
 				</p>
 
-				<h2 id="together">All three together</h2>
-				<p>
-					Relay makes sure the job runs, Lock makes sure it runs once, and Pulse notices if it stops
-					running at all.
-				</p>
+				<h2 id="together">All of them together</h2>
+				<p>Relay runs it, Lock runs it once, Pulse notices if it stops.</p>
 				<pre><code>{both}</code></pre>
 
 				<h2 id="keys">Keys and quota</h2>
-				<p>The API key is the whole account — there is no login, so key management is an API too:</p>
+				<p>The key is the account. No login, so key management is an API too:</p>
 				<pre><code>{keys}</code></pre>
 				<p class="muted">
-					Revoking the key you are currently using is refused, so nobody can lock themselves out.
-					Create the new one first, then revoke the old one with it.
+					Revoking the key you are using is refused, so nobody locks themselves out. New one first,
+					then revoke the old with it.
 				</p>
 
 				<p>Monitors and schedules share one quota. Check where you stand:</p>
 				<pre><code>{usage}</code></pre>
 				<p class="muted">
-					Hitting the limit refuses <em>new</em> monitors and schedules with
-					<code>quota_exceeded</code>. Pings and runs for things that already exist are never
-					refused for quota reasons.
+					At the limit, <em>new</em> monitors and schedules get <code>quota_exceeded</code>. Pings
+					and runs for existing ones never do.
 				</p>
 			</div>
 		</main>

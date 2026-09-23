@@ -20,14 +20,13 @@ import { CONTACT_EMAIL, DEFAULT_QUOTA, SITE_TITLE, WHAT_YOU_GET, X_HANDLE, X_URL
 				<p class="eyebrow">Pricing</p>
 				<h1>Free, for now. All of it.</h1>
 				<p class="lede">
-					Both services, every feature, no card and no trial clock. Ask for a key and you get one
-					the same day.
+					Every service, every feature, no card. Ask for a key and you get one the same day.
 				</p>
 
 				<div class="card offer">
 					<p class="price">$0</p>
 					<p class="quota">
-						{DEFAULT_QUOTA} monitors or schedules to start — ask and it goes up, still free
+						{DEFAULT_QUOTA} monitors or schedules to start — ask for more, still free
 					</p>
 					<ul>
 						{WHAT_YOU_GET.map((item) => <li>{item}</li>)}
@@ -37,43 +36,26 @@ import { CONTACT_EMAIL, DEFAULT_QUOTA, SITE_TITLE, WHAT_YOU_GET, X_HANDLE, X_URL
 
 				<h2>Why free</h2>
 				<p>
-					This is run by one person alongside a day job. Charging money makes promises about
-					response times, uptime and longevity that I am not ready to make yet — and I would rather
-					have a handful of people actually using it, telling me what breaks, than a pricing page
-					that converts nobody. The infrastructure costs a few dollars a month whether you use it
-					or not, so your monitor is not what makes this expensive.
+					One person, alongside a day job. Charging makes promises about response times and uptime
+					I am not ready to make. The infrastructure costs a few dollars a month whether you use it
+					or not.
 				</p>
 
-				<h2>What happens when that changes</h2>
-				<p>
-					Paid plans will arrive when the service has earned them, probably some months out. When
-					they do:
-				</p>
+				<h2>When that changes</h2>
 				<ul class="promises">
-					<li>You get plenty of notice, by email, before anything costs money.</li>
-					<li>Nothing gets switched off without you agreeing to it first.</li>
-					<li>
-						Nothing you built breaks. The API does not change shape because the billing does.
-					</li>
-					<li>
-						Anyone using it before then keeps a free allowance. Early users are the reason it got
-						good.
-					</li>
+					<li>Notice by email, well before anything costs money.</li>
+					<li>Nothing switched off without you agreeing first.</li>
+					<li>Nothing you built breaks; the API does not change shape because billing does.</li>
+					<li>Anyone using it before then keeps a free allowance.</li>
 				</ul>
 
 				<h2>Limits that exist anyway</h2>
-				<p>
-					These are technical, not commercial — they keep one account from taking the service down
-					for everyone:
-				</p>
+				<p>Technical, not commercial — they stop one account taking the service down for everyone.</p>
 				<ul class="promises">
-					<li>
-						{DEFAULT_QUOTA} monitors or schedules by default. Mail me and it goes up; there is no
-						charge and no negotiation.
-					</li>
-					<li>Ping payloads up to 2 KB. Relay request bodies up to 8 KB.</li>
-					<li>Scheduled calls: timeout up to 60 seconds, up to 3 attempts per run.</li>
-					<li>Schedules may only call public HTTPS endpoints.</li>
+					<li>{DEFAULT_QUOTA} monitors or schedules by default. Ask, and it goes up.</li>
+					<li>Ping payloads 2 KB; scheduled request bodies 8 KB.</li>
+					<li>Scheduled calls: 60s timeout, 3 attempts, public HTTPS targets only.</li>
+					<li>100 distinct lock names, lease up to an hour.</li>
 				</ul>
 
 				<h2>Questions you would reasonably ask</h2>
@@ -82,51 +64,44 @@ import { CONTACT_EMAIL, DEFAULT_QUOTA, SITE_TITLE, WHAT_YOU_GET, X_HANDLE, X_URL
 					<h3>How do I get a key?</h3>
 					<p>
 						Mail <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or ping
-						<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X. Provisioning is
-						manual on purpose: a human reads every request, and there is no signup form to trust.
+						<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X. Manual on purpose:
+						a human reads every request, and there is no signup form to trust.
 					</p>
 
-					<h3>What happens when I hit the limit?</h3>
+					<h3>What happens at the limit?</h3>
 					<p>
-						Creating the next monitor or schedule is refused with a clear error. Pings to monitors
-						that already exist, and runs of schedules that already exist, are
-						<strong>never</strong> refused for quota reasons — a limit must not be able to switch
-						off your monitoring quietly.
+						Creating the next one is refused. Pings and runs for things that already exist are
+						<strong>never</strong> refused for quota reasons.
 					</p>
 
-					<h3>How fast will I know something is wrong?</h3>
+					<h3>How fast will I know?</h3>
 					<p>
-						A sweep runs every minute, so an alert lands within about a minute of your interval
-						plus grace period passing. If you need second-level precision, say so — that is a
-						different product, and I would rather tell you than sell you this one.
+						A sweep runs every minute, so alerts land within about a minute of the deadline. Need
+						second-level precision? Say so — that is a different product.
 					</p>
 
 					<h3>Where do alerts go?</h3>
 					<p>
-						To any HTTPS webhook. The body is Slack-shaped (<code>text</code> at the top level), so
-						a Slack incoming webhook works with no configuration, and anything else gets structured
-						JSON in the same request. Email and SMS alerts are not built.
+						Any HTTPS webhook. The body is Slack-shaped (<code>text</code> at the top level), so a
+						Slack webhook needs no configuration. Email and SMS are not built.
 					</p>
 
-					<h3>Is there an API for everything?</h3>
+					<h3>Is there a dashboard?</h3>
 					<p>
-						There is only an API — monitors, schedules, history, and your own keys. No dashboard to
-						learn, on purpose. The <a href="/howto/">how-to page</a> is the whole product in curl.
+						No — only an API, on purpose. The <a href="/howto/">how-to page</a> is the whole
+						product in curl.
 					</p>
 
 					<h3>What if the service itself goes down?</h3>
 					<p>
-						Then you are not monitored, and honesty is the only answer available: there is no SLA
-						while it is free, and I will not promise one I cannot keep afterwards. It runs on
-						Cloudflare's edge with a serverless database, which is a good bet, not a guarantee. For
-						monitoring where a missed alert has serious consequences, run two independent
-						providers.
+						Then you are not monitored. No SLA while it is free, and I will not promise one I
+						cannot keep. Where a missed alert matters, run two providers.
 					</p>
 				</div>
 
 				<div class="closing card">
 					<h2>Start now, pay nothing</h2>
-					<p>Both services, {DEFAULT_QUOTA} things watched or run, upgradeable by asking.</p>
+					<p>{DEFAULT_QUOTA} things watched or run, upgradeable by asking.</p>
 					<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get an API key</a>
 				</div>
 			</div>

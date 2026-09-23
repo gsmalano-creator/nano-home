@@ -26,17 +26,16 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 					<p class="eyebrow">nano-api / pulse</p>
 					<h1>Your backup job died at 03:14.<br /><span class="dim">Nobody noticed until Monday.</span></h1>
 					<p class="lede">
-						NanoPulse tells you when a job you depend on has stopped running — a backup, an export,
-						a queue worker. It pings us each time it succeeds, and when the ping stops arriving you
-						hear about it in Slack within a minute.
+						Your job pings us when it succeeds. When the ping stops arriving, we tell you — in
+						Slack, within a minute.
 					</p>
 					<p class="cta">
 						<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get a free API key</a>
 						<a class="button secondary" href="/howto/#pulse">Curl walkthrough</a>
 					</p>
 					<p class="fineprint muted">
-						Free while the service is young. Mail <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-						or ping <a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X.
+						Free. Mail <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or ping
+						<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X.
 					</p>
 				</div>
 				<PulseDemo />
@@ -44,14 +43,11 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 
 			<section class="band">
 				<h2>One line in your crontab</h2>
-				<p>
-					No agent, no SDK, no sidecar. The <code>&&</code> is the entire trick: if the job fails,
-					the ping never happens, and silence is what we alert on.
-				</p>
 				<pre><code>{cron}</code></pre>
 				<p class="muted small">
-					First ping creates the monitor. Add <code>?interval=86400&amp;grace=3600</code> to say how
-					often you expect it and how late it may be.
+					The <code>&&</code> is the design: if the job fails, the ping never happens, and silence
+					is what we alert on. First ping creates the monitor;
+					<code>?interval=86400&amp;grace=3600</code> sets the window.
 				</p>
 			</section>
 
@@ -61,19 +57,19 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 					<div class="card">
 						<p class="tag">Uptime monitoring</p>
 						<ul class="plain">
-							<li>Pings <em>your server</em> and sees HTTP 200</li>
-							<li>Says nothing when the nightly export never ran</li>
-							<li>Cannot see inside a queue worker, a Kubernetes CronJob, or a laptop script</li>
-							<li>Needs your job to be reachable from the internet</li>
+							<li>Pings your server, sees HTTP 200</li>
+							<li>Silent when the nightly export never ran</li>
+							<li>Blind to queue workers, CronJobs, laptop scripts</li>
+							<li>Needs your job reachable from the internet</li>
 						</ul>
 					</div>
 					<div class="card alive-edge">
 						<p class="tag live">NanoPulse</p>
 						<ul class="plain">
-							<li>Waits for <em>your job</em> to report success</li>
-							<li>Alerts on the absence of a signal, which is the failure nobody catches</li>
-							<li>Works anywhere <code>curl</code> works — behind NAT, in CI, on a Raspberry Pi</li>
-							<li>Takes a payload, so the ping can carry "12 043 rows exported"</li>
+							<li>Waits for the job itself to report success</li>
+							<li>Alerts on absence — the failure nobody catches</li>
+							<li>Works anywhere <code>curl</code> works</li>
+							<li>Takes a payload: "12 043 rows exported"</li>
 						</ul>
 					</div>
 				</div>
@@ -85,36 +81,26 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 					<li>
 						<span class="n">1</span>
 						<h3>Ping on success</h3>
-						<p>
-							One HTTP call at the end of your job. GET or POST, so <code>curl</code> and
-							<code>wget</code> one-liners work unchanged.
-						</p>
+						<p>One HTTP call at the end of the job. GET or POST.</p>
 					</li>
 					<li>
 						<span class="n">2</span>
-						<h3>We do the counting</h3>
-						<p>
-							Every monitor has an expected interval and a grace period. A sweep at the edge checks
-							every minute who has gone quiet.
-						</p>
+						<h3>We count</h3>
+						<p>A sweep at the edge checks every minute who has gone quiet.</p>
 					</li>
 					<li>
 						<span class="n">3</span>
 						<h3>We shout once</h3>
-						<p>
-							A Slack-shaped webhook on the way down and again on recovery — on transitions only,
-							so you are not woken twice for the same outage.
-						</p>
+						<p>On the way down, and again on recovery. Transitions only.</p>
 					</li>
 				</ol>
 			</section>
 
 			<section class="band">
-				<h2>Worth pairing with Relay</h2>
+				<h2>Pairs with the others</h2>
 				<p>
-					<a href="/relay/">NanoRelay</a> runs jobs for you on a schedule. Put a Pulse ping inside the
-					job it calls and the two cover each other: if Relay ever stops calling, the missing ping is
-					still an alert.
+					<a href="/relay/">Relay</a> runs the job for you; <a href="/lock/">Lock</a> keeps it to one
+					copy. Put a ping at the end and a missing Relay run is an alert too.
 				</p>
 				<p class="cta">
 					<a class="button" href="/howto/">How to, in curl</a>
