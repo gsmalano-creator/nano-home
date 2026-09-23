@@ -3,31 +3,34 @@
 Marketing site and docs for the [nano-api](https://nano-api.com) family of single-purpose APIs.
 Astro, deployed to Cloudflare Workers.
 
-The first service is **NanoPulse** (`pulse.nano-api.com`) — a dead man's switch for cron jobs,
-background workers and servers. Its code lives in a separate repo.
+Two live services, both in the `nano-api` repo:
+
+- **NanoPulse** (`pulse.nano-api.com`) tells you when a job you depend on has stopped running.
+- **NanoRelay** (`relay.nano-api.com`) calls your endpoint on a schedule and tells you when that
+  fails.
+
+Everything is free while the service is young, so there is no plan catalogue — see `/pricing/`.
 
 ## Pages
 
 | Route | Content |
 | --- | --- |
-| `/` | Hero with an animated CSS demo of a heartbeat going flat, the crontab one-liner, uptime-vs-heartbeat comparison, the service family, pricing teaser |
-| `/pricing/` | Plans (Free / Pro / Business / Custom), what every plan includes, and the questions a buyer actually asks |
+| `/` | The umbrella: what the two services are, what they share, and how they cover each other |
+| `/pulse/` | NanoPulse: animated CSS demo of a heartbeat going flat, the crontab one-liner, uptime-vs-heartbeat |
+| `/relay/` | NanoRelay: animated run log with a retry and an alert, the DST argument, failure behaviour |
+| `/howto/` | Both services end to end in copy-paste curl |
+| `/pricing/` | Free for now: what that includes, why, and what happens when it changes |
 | `/about/` | Who runs it, how it is built, and what not to expect |
 
 ## Editing content
 
-Everything commercial lives in `src/consts.ts`: plan names, prices, quotas, shared features, the
-service list and the contact channels (`CONTACT_EMAIL`, `X_URL`). The pricing page and the front page both read from it, so the two can never
+Everything commercial lives in `src/consts.ts`: the default quota, the feature list, the service
+list (name, host, `live`/`planned` status, page link) and the contact channels. Flipping a service
+to `live` there updates the cards and removes the "planned" notice on the how-to page. The pricing page and the front page both read from it, so the two can never
 disagree. Change a price in one place.
 
-```ts
-export const PLANS: Plan[] = [
-  { id: "pro", name: "Pro", price: "$9", cadence: "per month", monitors: "50 monitors", ... },
-];
-```
-
-Plans map directly onto the `users.monitor_limit` quota in NanoPulse — a plan *is* that number,
-so "upgrading" a customer is one API call and needs no change here unless the price moves.
+`DEFAULT_QUOTA` mirrors `users.monitor_limit` in the API, which covers monitors and schedules
+together. Raising a customer's limit is one admin API call and needs no change here.
 
 ## Development
 

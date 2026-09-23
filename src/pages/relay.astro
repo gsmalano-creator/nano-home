@@ -1,0 +1,252 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import RelayDemo from "../components/RelayDemo.astro";
+import { CONTACT_EMAIL, RELAY_BASE, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
+
+const create = `curl -X POST ${RELAY_BASE}/v1/schedules \\
+  -H "Authorization: Bearer $NANO_API_KEY" \\
+  -H 'content-type: application/json' \\
+  -d '{
+    "slug": "nightly-report",
+    "cron": "0 3 * * *",
+    "timezone": "Europe/Oslo",
+    "url": "https://api.example.com/jobs/nightly-report"
+  }'`;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead
+			title={`NanoRelay — ${SITE_TITLE}`}
+			description="NanoRelay calls your endpoint on a schedule, in your timezone, with retries and alerts when it fails. Cron without a server."
+		/>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section class="hero">
+				<div>
+					<p class="eyebrow">nano-api / relay</p>
+					<h1>Cron, without<br /><span class="dim">a machine to keep alive.</span></h1>
+					<p class="lede">
+						NanoRelay calls your endpoint on a schedule — in your timezone, with retries, timeouts
+						and a Slack alert when it starts failing. Nothing of yours has to be running in
+						between.
+					</p>
+					<p class="cta">
+						<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get a free API key</a>
+						<a class="button secondary" href="/howto/#relay">Curl walkthrough</a>
+					</p>
+					<p class="fineprint muted">
+						Free while the service is young. Mail <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+						or ping <a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X.
+					</p>
+				</div>
+				<RelayDemo />
+			</section>
+
+			<section class="band">
+				<h2>One call to set it up</h2>
+				<pre><code>{create}</code></pre>
+				<p class="muted small">
+					Add <code>body</code>, <code>headers</code>, <code>timeout_seconds</code>,
+					<code>max_attempts</code> and <code>alert_webhook_url</code> as needed. Run it on demand
+					with <code>POST /v1/schedules/:slug/run</code> — useful before you trust it.
+				</p>
+			</section>
+
+			<section class="band">
+				<h2>03:00 means 03:00, in March and in November</h2>
+				<p>
+					Platform crons run in UTC. That means a job you set for 03:00 quietly moves to 02:00 or
+					04:00 twice a year, and you find out from a report that ran an hour into the wrong day.
+					Relay evaluates the expression in the IANA zone you name.
+				</p>
+				<div class="two">
+					<div class="card">
+						<p class="tag">UTC-only cron</p>
+						<ul class="plain">
+							<li>Drifts an hour twice a year against local time</li>
+							<li>A nonexistent local hour in spring silently skips the run</li>
+							<li>An ambiguous hour in autumn can run the job twice</li>
+						</ul>
+					</div>
+					<div class="card alive-edge">
+						<p class="tag live">NanoRelay</p>
+						<ul class="plain">
+							<li><code>0 3 * * *</code> in <code>Europe/Oslo</code> stays at 03:00 all year</li>
+							<li>A missing local hour runs just after the gap instead of being skipped</li>
+							<li>An ambiguous hour runs once, on its first instant</li>
+						</ul>
+					</div>
+				</div>
+				<p class="muted small">
+					All three behaviours are pinned by tests in the repo, because this is exactly the kind of
+					thing that breaks silently and is discovered a season later.
+				</p>
+			</section>
+
+			<section class="band">
+				<h2>What happens when the call fails</h2>
+				<ol class="steps">
+					<li>
+						<span class="n">1</span>
+						<h3>Retry, briefly</h3>
+						<p>
+							Up to three attempts with 2s and 6s backoff, each bounded by your
+							<code>timeout_seconds</code>. A slow endpoint is a failure, not a hang.
+						</p>
+					</li>
+					<li>
+						<span class="n">2</span>
+						<h3>Alert on the change</h3>
+						<p>
+							One alert when it starts failing, one when it recovers. Not one per failed run, so a
+							broken endpoint cannot flood your channel.
+						</p>
+					</li>
+					<li>
+						<span class="n">3</span>
+						<h3>Keep the evidence</h3>
+						<p>
+							Every run is stored with status code, duration, attempts and the first part of the
+							response body, so you can see what the endpoint actually said.
+						</p>
+					</li>
+				</ol>
+			</section>
+
+			<section class="band">
+				<h2>Two things worth knowing</h2>
+				<p>
+					<strong>Delivery is at-least-once.</strong> A timed-out call may still have landed, so make
+					the endpoint idempotent. Every request carries <code>X-NanoRelay-Run-Id</code> so you can
+					deduplicate.
+				</p>
+				<p>
+					<strong>Missed slots are skipped, not replayed.</strong> After an outage the next run is
+					computed from now, so a backlog never stampedes your endpoint with a day of catch-up
+					calls.
+				</p>
+			</section>
+
+			<section class="band">
+				<h2>Pair it with Pulse</h2>
+				<p>
+					When a scheduler dies, the symptom is silence — the exact problem
+					<a href="/pulse/">NanoPulse</a> exists to catch. Put a ping inside the job Relay calls, and
+					the two watch each other.
+				</p>
+				<p class="cta">
+					<a class="button" href="/howto/">How to, in curl</a>
+					<a class="button secondary" href="/pricing/">What it costs</a>
+				</p>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	.hero {
+		display: grid;
+		grid-template-columns: 1.05fr 1fr;
+		gap: 2.5em;
+		align-items: center;
+		padding: 2em 0 1em;
+	}
+	.dim {
+		color: var(--muted);
+	}
+	.lede {
+		font-size: 1.1rem;
+		color: var(--muted);
+		max-width: 34em;
+	}
+	.cta {
+		display: flex;
+		gap: 0.7em;
+		flex-wrap: wrap;
+		margin: 1.4em 0 0.6em;
+	}
+	.fineprint {
+		font-size: 0.85rem;
+	}
+	.band {
+		padding: 3em 0 0;
+	}
+	.band > p {
+		max-width: 46em;
+		color: var(--muted);
+	}
+	.small {
+		font-size: 0.85rem;
+	}
+	.two {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 1.2em;
+		margin: 1.4em 0 1em;
+	}
+	.alive-edge {
+		border-color: var(--alive-dim);
+	}
+	ul.plain {
+		list-style: none;
+		margin: 1em 0 0;
+		padding: 0;
+		font-size: 0.95rem;
+	}
+	ul.plain li {
+		padding-left: 1.3em;
+		position: relative;
+		margin-bottom: 0.6em;
+		color: var(--muted);
+	}
+	ul.plain li::before {
+		content: "·";
+		position: absolute;
+		left: 0.3em;
+	}
+	.alive-edge ul.plain li::before {
+		content: "✓";
+		color: var(--alive);
+		left: 0;
+	}
+	.steps {
+		list-style: none;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.2em;
+		margin: 1.4em 0 0;
+		padding: 0;
+	}
+	.steps li {
+		border-top: 2px solid var(--border);
+		padding-top: 1em;
+	}
+	.steps .n {
+		font-family: var(--mono);
+		color: var(--alive);
+		font-size: 0.8rem;
+	}
+	.steps h3 {
+		font-size: 1.05rem;
+		margin: 0.2em 0 0.4em;
+	}
+	.steps p {
+		color: var(--muted);
+		font-size: 0.93rem;
+		margin: 0;
+	}
+	@media (max-width: 860px) {
+		.hero,
+		.two,
+		.steps {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

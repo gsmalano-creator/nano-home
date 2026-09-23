@@ -2,183 +2,217 @@
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import PlanCard from "../components/PlanCard.astro";
-import {
-	CONTACT_EMAIL,
-	PLANS,
-	PULSE_BASE,
-	SHARED_FEATURES,
-	SITE_TITLE,
-	X_HANDLE,
-	X_URL,
-} from "../consts";
-
-const title = `Pricing — ${SITE_TITLE}`;
-const description =
-	"NanoPulse pricing: 5 monitors free, 50 for $9/month, 500 for $29/month. Unlimited pings and Slack alerts on every plan.";
+import { CONTACT_EMAIL, DEFAULT_QUOTA, SITE_TITLE, WHAT_YOU_GET, X_HANDLE, X_URL } from "../consts";
 ---
 
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={title} description={description} />
+		<BaseHead
+			title={`Pricing — ${SITE_TITLE}`}
+			description="Everything on nano-api is free while the service is young. No card, no trial clock, no feature held back."
+		/>
 	</head>
 	<body>
 		<Header />
 		<main>
-			<section class="intro">
-				<p class="eyebrow">NanoPulse pricing</p>
-				<h1>You pay for monitors. Everything else is included.</h1>
+			<div class="page">
+				<p class="eyebrow">Pricing</p>
+				<h1>Free, for now. All of it.</h1>
 				<p class="lede">
-					A monitor is one thing you want to hear about: a nightly backup, a queue worker, a
-					certificate renewal. Pings are unlimited on every plan, because charging per heartbeat
-					would just teach you to ping less.
+					Both services, every feature, no card and no trial clock. Ask for a key and you get one
+					the same day.
 				</p>
-			</section>
 
-			<section class="plans">
-				{PLANS.map((plan) => <PlanCard plan={plan} />)}
-			</section>
+				<div class="card offer">
+					<p class="price">$0</p>
+					<p class="quota">
+						{DEFAULT_QUOTA} monitors or schedules to start — ask and it goes up, still free
+					</p>
+					<ul>
+						{WHAT_YOU_GET.map((item) => <li>{item}</li>)}
+					</ul>
+					<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get an API key</a>
+				</div>
 
-			<section class="band">
-				<h2>In every plan, including the free one</h2>
-				<ul class="shared">
-					{SHARED_FEATURES.map((f) => <li>{f}</li>)}
+				<h2>Why free</h2>
+				<p>
+					This is run by one person alongside a day job. Charging money makes promises about
+					response times, uptime and longevity that I am not ready to make yet — and I would rather
+					have a handful of people actually using it, telling me what breaks, than a pricing page
+					that converts nobody. The infrastructure costs a few dollars a month whether you use it
+					or not, so your monitor is not what makes this expensive.
+				</p>
+
+				<h2>What happens when that changes</h2>
+				<p>
+					Paid plans will arrive when the service has earned them, probably some months out. When
+					they do:
+				</p>
+				<ul class="promises">
+					<li>You get plenty of notice, by email, before anything costs money.</li>
+					<li>Nothing gets switched off without you agreeing to it first.</li>
+					<li>
+						Nothing you built breaks. The API does not change shape because the billing does.
+					</li>
+					<li>
+						Anyone using it before then keeps a free allowance. Early users are the reason it got
+						good.
+					</li>
 				</ul>
-			</section>
 
-			<section class="band">
+				<h2>Limits that exist anyway</h2>
+				<p>
+					These are technical, not commercial — they keep one account from taking the service down
+					for everyone:
+				</p>
+				<ul class="promises">
+					<li>
+						{DEFAULT_QUOTA} monitors or schedules by default. Mail me and it goes up; there is no
+						charge and no negotiation.
+					</li>
+					<li>Ping payloads up to 2 KB. Relay request bodies up to 8 KB.</li>
+					<li>Scheduled calls: timeout up to 60 seconds, up to 3 attempts per run.</li>
+					<li>Schedules may only call public HTTPS endpoints.</li>
+				</ul>
+
 				<h2>Questions you would reasonably ask</h2>
 
 				<div class="qa">
-					<h3>How do I get a key, and how do I pay?</h3>
+					<h3>How do I get a key?</h3>
 					<p>
-						Mail <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> — or ping
-						<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X — and you get a key
-						the same day, with an invoice to follow for the paid plans. Provisioning is deliberately
-						manual while the service is young: a human reads every request, and there is no card
-						form to trust. Self-serve checkout comes when the volume justifies it.
+						Mail <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or ping
+						<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X. Provisioning is
+						manual on purpose: a human reads every request, and there is no signup form to trust.
 					</p>
 
-					<h3>What happens when I hit my monitor limit?</h3>
+					<h3>What happens when I hit the limit?</h3>
 					<p>
-						Creating the next monitor is refused with a clear error. Pings to monitors that already
-						exist are <strong>never</strong> rejected for quota reasons — a billing question must
-						never be able to switch off your monitoring. Delete a monitor and the slot is free
-						immediately.
+						Creating the next monitor or schedule is refused with a clear error. Pings to monitors
+						that already exist, and runs of schedules that already exist, are
+						<strong>never</strong> refused for quota reasons — a limit must not be able to switch
+						off your monitoring quietly.
 					</p>
 
-					<h3>Can I change plan later?</h3>
+					<h3>How fast will I know something is wrong?</h3>
 					<p>
-						Yes, and it takes effect instantly: a plan here is just a number on your account, so
-						there is no migration and nothing to re-create.
-					</p>
-
-					<h3>How fast will I know?</h3>
-					<p>
-						A scheduled sweep runs every minute, so an alert lands between zero and 60 seconds
-						after your interval plus grace period has passed. If you need second-level
-						precision, say so — that is a different product and I would rather tell you than sell
-						you this one.
+						A sweep runs every minute, so an alert lands within about a minute of your interval
+						plus grace period passing. If you need second-level precision, say so — that is a
+						different product, and I would rather tell you than sell you this one.
 					</p>
 
 					<h3>Where do alerts go?</h3>
 					<p>
-						To any HTTPS webhook. The body is Slack-shaped (<code>text</code> at the top level), so a
-						Slack incoming webhook works with no configuration, and anything else gets structured
+						To any HTTPS webhook. The body is Slack-shaped (<code>text</code> at the top level), so
+						a Slack incoming webhook works with no configuration, and anything else gets structured
 						JSON in the same request. Email and SMS alerts are not built.
 					</p>
 
 					<h3>Is there an API for everything?</h3>
 					<p>
-						There is only an API. Create and update monitors, read ping and event history, rotate and
-						revoke your own keys — all under <code>{PULSE_BASE}/v1</code>. There is no dashboard to
-						learn, and that is on purpose.
+						There is only an API — monitors, schedules, history, and your own keys. No dashboard to
+						learn, on purpose. The <a href="/howto/">how-to page</a> is the whole product in curl.
 					</p>
 
 					<h3>What if the service itself goes down?</h3>
 					<p>
-						Then you are not monitored, and honesty is the only answer available: there is no SLA on
-						the free plan, and no promise I cannot keep on the paid ones. It runs on Cloudflare's
-						edge with a serverless database, which is a good bet, not a guarantee. For
-						life-critical monitoring, use two independent providers.
+						Then you are not monitored, and honesty is the only answer available: there is no SLA
+						while it is free, and I will not promise one I cannot keep afterwards. It runs on
+						Cloudflare's edge with a serverless database, which is a good bet, not a guarantee. For
+						monitoring where a missed alert has serious consequences, run two independent
+						providers.
 					</p>
 				</div>
-			</section>
 
-			<section class="closing card">
-				<h2>Start on the free plan</h2>
-				<p>Five monitors, unlimited pings, Slack alerts. Upgrade the day you need the sixth.</p>
-				<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=NanoPulse%20API%20key`}>Get an API key</a>
-			</section>
+				<div class="closing card">
+					<h2>Start now, pay nothing</h2>
+					<p>Both services, {DEFAULT_QUOTA} things watched or run, upgradeable by asking.</p>
+					<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get an API key</a>
+				</div>
+			</div>
 		</main>
 		<Footer />
 	</body>
 </html>
 
 <style>
-	.intro {
+	.page {
+		max-width: 46em;
 		padding: 2em 0 0;
-		max-width: 40em;
 	}
 	.lede {
 		color: var(--muted);
 		font-size: 1.05rem;
 	}
-	.plans {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 1.1em;
-		margin: 2.5em 0 0;
+	.offer {
+		margin: 2em 0 1em;
+		border-color: var(--alive-dim);
+		box-shadow: 0 0 0 1px var(--alive-dim), var(--box-shadow);
 	}
-	.band {
-		padding: 3em 0 0;
+	.price {
+		font-size: 3rem;
+		font-weight: 700;
+		margin: 0;
+		letter-spacing: -0.03em;
 	}
-	ul.shared {
+	.quota {
+		font-family: var(--mono);
+		font-size: 0.9rem;
+		color: var(--alive);
+		margin: 0.2em 0 1.2em;
+	}
+	.offer ul {
 		list-style: none;
+		margin: 0 0 1.6em;
+		padding: 1.2em 0 0;
+		border-top: 1px solid var(--border);
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
-		gap: 0.6em 1.5em;
-		margin: 1.2em 0 0;
-		padding: 0;
+		gap: 0.5em 1.4em;
+		font-size: 0.93rem;
 	}
-	ul.shared li {
+	.offer li {
 		position: relative;
-		padding-left: 1.6em;
+		padding-left: 1.5em;
 		color: var(--muted);
 	}
-	ul.shared li::before {
+	.offer li::before {
 		content: "✓";
 		position: absolute;
 		left: 0;
 		color: var(--alive);
 	}
-	.qa {
-		max-width: 44em;
+	h2 {
+		margin-top: 2.4em;
+		font-size: 1.5rem;
+	}
+	.page p {
+		color: var(--muted);
+	}
+	ul.promises {
+		padding-left: 1.2em;
+		color: var(--muted);
+	}
+	ul.promises li {
+		margin-bottom: 0.5em;
 	}
 	.qa h3 {
-		margin-top: 1.6em;
+		margin-top: 1.8em;
 		font-size: 1.1rem;
-	}
-	.qa p {
-		color: var(--muted);
+		color: var(--text);
 	}
 	.closing {
-		margin-top: 3.5em;
+		margin-top: 3em;
 		text-align: center;
 	}
+	.closing h2 {
+		margin-top: 0;
+	}
 	.closing p {
-		color: var(--muted);
 		margin-bottom: 1.4em;
 	}
-	@media (max-width: 980px) {
-		.plans {
-			grid-template-columns: repeat(2, 1fr);
-		}
-	}
 	@media (max-width: 620px) {
-		.plans,
-		ul.shared {
+		.offer ul {
 			grid-template-columns: 1fr;
 		}
 	}

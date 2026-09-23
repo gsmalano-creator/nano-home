@@ -1,0 +1,228 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import PulseDemo from "../components/PulseDemo.astro";
+import { CONTACT_EMAIL, PULSE_BASE, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
+
+const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
+  curl -fsS -X POST -H "Authorization: Bearer $NANO_API_KEY" \\
+    ${PULSE_BASE}/v1/ping/nightly-backup`;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead
+			title={`NanoPulse — ${SITE_TITLE}`}
+			description="NanoPulse tells you when a job you depend on has stopped running. Your job pings on success; silence is the alert."
+		/>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section class="hero">
+				<div>
+					<p class="eyebrow">nano-api / pulse</p>
+					<h1>Your backup job died at 03:14.<br /><span class="dim">Nobody noticed until Monday.</span></h1>
+					<p class="lede">
+						NanoPulse tells you when a job you depend on has stopped running — a backup, an export,
+						a queue worker. It pings us each time it succeeds, and when the ping stops arriving you
+						hear about it in Slack within a minute.
+					</p>
+					<p class="cta">
+						<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get a free API key</a>
+						<a class="button secondary" href="/howto/#pulse">Curl walkthrough</a>
+					</p>
+					<p class="fineprint muted">
+						Free while the service is young. Mail <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+						or ping <a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X.
+					</p>
+				</div>
+				<PulseDemo />
+			</section>
+
+			<section class="band">
+				<h2>One line in your crontab</h2>
+				<p>
+					No agent, no SDK, no sidecar. The <code>&&</code> is the entire trick: if the job fails,
+					the ping never happens, and silence is what we alert on.
+				</p>
+				<pre><code>{cron}</code></pre>
+				<p class="muted small">
+					First ping creates the monitor. Add <code>?interval=86400&amp;grace=3600</code> to say how
+					often you expect it and how late it may be.
+				</p>
+			</section>
+
+			<section class="band">
+				<h2>Uptime checks watch the door. We watch the work.</h2>
+				<div class="two">
+					<div class="card">
+						<p class="tag">Uptime monitoring</p>
+						<ul class="plain">
+							<li>Pings <em>your server</em> and sees HTTP 200</li>
+							<li>Says nothing when the nightly export never ran</li>
+							<li>Cannot see inside a queue worker, a Kubernetes CronJob, or a laptop script</li>
+							<li>Needs your job to be reachable from the internet</li>
+						</ul>
+					</div>
+					<div class="card alive-edge">
+						<p class="tag live">NanoPulse</p>
+						<ul class="plain">
+							<li>Waits for <em>your job</em> to report success</li>
+							<li>Alerts on the absence of a signal, which is the failure nobody catches</li>
+							<li>Works anywhere <code>curl</code> works — behind NAT, in CI, on a Raspberry Pi</li>
+							<li>Takes a payload, so the ping can carry "12 043 rows exported"</li>
+						</ul>
+					</div>
+				</div>
+			</section>
+
+			<section class="band">
+				<h2>How it works</h2>
+				<ol class="steps">
+					<li>
+						<span class="n">1</span>
+						<h3>Ping on success</h3>
+						<p>
+							One HTTP call at the end of your job. GET or POST, so <code>curl</code> and
+							<code>wget</code> one-liners work unchanged.
+						</p>
+					</li>
+					<li>
+						<span class="n">2</span>
+						<h3>We do the counting</h3>
+						<p>
+							Every monitor has an expected interval and a grace period. A sweep at the edge checks
+							every minute who has gone quiet.
+						</p>
+					</li>
+					<li>
+						<span class="n">3</span>
+						<h3>We shout once</h3>
+						<p>
+							A Slack-shaped webhook on the way down and again on recovery — on transitions only,
+							so you are not woken twice for the same outage.
+						</p>
+					</li>
+				</ol>
+			</section>
+
+			<section class="band">
+				<h2>Worth pairing with Relay</h2>
+				<p>
+					<a href="/relay/">NanoRelay</a> runs jobs for you on a schedule. Put a Pulse ping inside the
+					job it calls and the two cover each other: if Relay ever stops calling, the missing ping is
+					still an alert.
+				</p>
+				<p class="cta">
+					<a class="button" href="/howto/">How to, in curl</a>
+					<a class="button secondary" href="/pricing/">What it costs</a>
+				</p>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	.hero {
+		display: grid;
+		grid-template-columns: 1.05fr 1fr;
+		gap: 2.5em;
+		align-items: center;
+		padding: 2em 0 1em;
+	}
+	.dim {
+		color: var(--muted);
+	}
+	.lede {
+		font-size: 1.1rem;
+		color: var(--muted);
+		max-width: 34em;
+	}
+	.cta {
+		display: flex;
+		gap: 0.7em;
+		flex-wrap: wrap;
+		margin: 1.4em 0 0.6em;
+	}
+	.fineprint {
+		font-size: 0.85rem;
+	}
+	.band {
+		padding: 3em 0 0;
+	}
+	.band > p {
+		max-width: 46em;
+		color: var(--muted);
+	}
+	.small {
+		font-size: 0.85rem;
+	}
+	.two {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 1.2em;
+		margin-top: 1.4em;
+	}
+	.alive-edge {
+		border-color: var(--alive-dim);
+	}
+	ul.plain {
+		list-style: none;
+		margin: 1em 0 0;
+		padding: 0;
+		font-size: 0.95rem;
+	}
+	ul.plain li {
+		padding-left: 1.3em;
+		position: relative;
+		margin-bottom: 0.6em;
+		color: var(--muted);
+	}
+	ul.plain li::before {
+		content: "·";
+		position: absolute;
+		left: 0.3em;
+	}
+	.alive-edge ul.plain li::before {
+		content: "✓";
+		color: var(--alive);
+		left: 0;
+	}
+	.steps {
+		list-style: none;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.2em;
+		margin: 1.4em 0 0;
+		padding: 0;
+	}
+	.steps li {
+		border-top: 2px solid var(--border);
+		padding-top: 1em;
+	}
+	.steps .n {
+		font-family: var(--mono);
+		color: var(--alive);
+		font-size: 0.8rem;
+	}
+	.steps h3 {
+		font-size: 1.05rem;
+		margin: 0.2em 0 0.4em;
+	}
+	.steps p {
+		color: var(--muted);
+		font-size: 0.93rem;
+		margin: 0;
+	}
+	@media (max-width: 860px) {
+		.hero,
+		.two,
+		.steps {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

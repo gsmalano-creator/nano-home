@@ -2,166 +2,94 @@
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import PulseDemo from "../components/PulseDemo.astro";
-import {
-	CONTACT_EMAIL,
-	PLANS,
-	PULSE_BASE,
-	SERVICES,
-	SITE_DESCRIPTION,
-	SITE_TITLE,
-	X_HANDLE,
-	X_URL,
-} from "../consts";
+import { CONTACT_EMAIL, SERVICES, SITE_DESCRIPTION, SITE_TITLE, WHAT_YOU_GET, X_HANDLE, X_URL } from "../consts";
 
-const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
-  curl -fsS -X POST -H "Authorization: Bearer $NANOPULSE_API_KEY" \\
-    ${PULSE_BASE}/v1/ping/nightly-backup`;
+const snippets: Record<string, string> = {
+	NanoPulse: `backup.sh && curl -fsS -X POST \\
+  $PULSE/v1/ping/nightly-backup`,
+	NanoRelay: `curl -X POST $RELAY/v1/schedules -d '{
+  "cron": "0 3 * * *", "timezone": "Europe/Oslo",
+  "url": "https://api.example.com/jobs/report" }'`,
+};
 ---
 
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={`${SITE_TITLE} — know when a job stops running`} description={SITE_DESCRIPTION} />
+		<BaseHead title={`${SITE_TITLE} — small APIs for the jobs nobody is watching`} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
 		<Header />
 		<main>
 			<section class="hero">
-				<div>
-					<p class="eyebrow">nano-api / pulse</p>
-					<h1>Your backup job died at 03:14 Sunday morning.<br /><span class="dim">Nobody noticed until Monday.</span></h1>
-					<p class="lede">
-						Add a heartbeat to your service with minimal effort!
-						NanoPulse tells you when a job you depend on has stopped running — a backup, an export,
-						a queue worker. It pings us each time it succeeds, and when the ping stops arriving you
-						hear about it in Slack within five minutes.
-					</p>
-					<p class="cta">
-						<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=NanoPulse%20API%20key`}>Get an API key</a>
-						<a class="button secondary" href="/pricing/">Pricing</a>
-					</p>
-					<p class="fineprint muted">
-						Free for 5 monitors. No signup form, no credit card — mail
-						<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or ping
-						<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X, and you get a key.
-					</p>
-				</div>
-				<PulseDemo />
+				<p class="eyebrow">nano-api</p>
+				<h1>Small, sharp APIs for the jobs <span class="dim">nobody is watching.</span></h1>
+				<p class="lede">
+					Two services, one API key, no dashboard to learn. One tells you when a job you depend on
+					has stopped running. The other runs the job for you and tells you when that fails.
+				</p>
+				<p class="cta">
+					<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get a free API key</a>
+					<a class="button secondary" href="/howto/">How to, in curl</a>
+				</p>
+				<p class="free">
+					<span class="tag live">Free</span>
+					Everything on nano-api is free while the service is young — both services, every feature,
+					no card. <a href="/pricing/">Here is what that means.</a>
+				</p>
+			</section>
+
+			<section class="services">
+				{
+					SERVICES.map((service) => (
+						<a class="card service" href={service.href}>
+							<p class:list={["tag", { live: service.status === "live" }]}>
+								{service.status === "live" ? "Live" : "Planned"}
+							</p>
+							<h2>{service.name}</h2>
+							<code class="host">{service.host}</code>
+							<p class="summary">{service.summary}</p>
+							{snippets[service.name] && <pre><code>{snippets[service.name]}</code></pre>}
+							<span class="more">Read more &rarr;</span>
+						</a>
+					))
+				}
 			</section>
 
 			<section class="band">
-				<h2>One line in your crontab</h2>
+				<h2>What they have in common</h2>
+				<ul class="shared">
+					{WHAT_YOU_GET.map((item) => <li>{item}</li>)}
+				</ul>
+				<p class="muted">
+					Both run on Cloudflare's edge with a serverless database, which is why the free tier can
+					exist: one more monitor or schedule costs close to nothing, so there is no reason to meter
+					you into a corner.
+				</p>
+			</section>
+
+			<section class="band">
+				<h2>They cover each other</h2>
 				<p>
-					No agent, no SDK, no sidecar. The <code>&&</code> is the entire trick: if the job fails,
-					the ping never happens, and silence is what we alert on.
+					Put a Pulse ping inside the job Relay calls. If the endpoint breaks, Relay tells you. If
+					Relay itself ever stops calling, the missing ping tells you. A scheduler that dies quietly
+					is the failure mode neither tool catches alone.
 				</p>
-				<pre><code>{cron}</code></pre>
-				<p class="muted small">
-					First ping creates the monitor. Add <code>?interval=86400&amp;grace=3600</code> to say how
-					often you expect it and how late it may be.
+				<p class="cta">
+					<a class="button" href="/pulse/">NanoPulse</a>
+					<a class="button secondary" href="/relay/">NanoRelay</a>
 				</p>
 			</section>
 
 			<section class="band">
-				<h2>Uptime checks watch the door. We watch the work.</h2>
-				<div class="two">
-					<div class="card">
-						<p class="tag">Uptime monitoring</p>
-						<ul class="plain">
-							<li>Pings <em>your server</em> and sees HTTP 200</li>
-							<li>Says nothing when the nightly export never ran</li>
-							<li>Cannot see inside a queue worker, a Kubernetes CronJob, or a laptop script</li>
-							<li>Needs your job to be reachable from the internet</li>
-						</ul>
-					</div>
-					<div class="card alive-edge">
-						<p class="tag live">NanoPulse</p>
-						<ul class="plain">
-							<li>Waits for <em>your job</em> to report success</li>
-							<li>Alerts on the absence of a signal, which is the failure nobody catches</li>
-							<li>Works anywhere <code>curl</code> works — behind NAT, in CI, on a Raspberry Pi</li>
-							<li>Takes a payload, so the ping can carry "12 043 rows exported"</li>
-						</ul>
-					</div>
-				</div>
-			</section>
-
-			<section class="band">
-				<h2>How it works</h2>
-				<h3>Built on top of Cloudflare - solid monitoring for you</h3>
-				<ol class="steps">
-					<li>
-						<span class="n">1</span>
-						<h3>Ping on success</h3>
-						<p>
-							One HTTP call at the end of your job. GET or POST, so <code>curl</code> and
-							<code>wget</code> one-liners work unchanged.
-						</p>
-					</li>
-					<li>
-						<span class="n">2</span>
-						<h3>We do the counting</h3>
-						<p>
-							Every monitor has an expected interval and a grace period. A scheduled sweep at the
-							edge checks, every minute, who has gone quiet.
-						</p>
-					</li>
-					<li>
-						<span class="n">3</span>
-						<h3>We shout once</h3>
-						<p>
-							A Slack-shaped webhook on the way down and again on recovery — on transitions only,
-							so you are not woken twice for the same outage.
-						</p>
-					</li>
-				</ol>
-			</section>
-
-			<section class="band">
-				<h2>The nano family of apis</h2>
+				<h2>Who runs it</h2>
 				<p>
-					Each service is a single subdomain, one API key, and one job it does well. No dashboard you
-					have to learn.
+					One person, alongside a day job. That is the reason for the small surface, the honest
+					limits and the lack of a pricing page with four tiers on it. Questions go to
+					<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or
+					<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X, and reach the person
+					who wrote the code. <a href="/about/">More about that.</a>
 				</p>
-				<div class="services">
-					{
-						SERVICES.map((s) => (
-							<div class="card service">
-								<p class:list={["tag", { live: s.status === "live" }]}>
-									{s.status === "live" ? "Live" : "Planned"}
-								</p>
-								<h3>{s.name}</h3>
-								<code>{s.host}</code>
-								<p class="muted">{s.summary}</p>
-								{s.href && <a href={s.href}>Pricing &rarr;</a>}
-							</div>
-						))
-					}
-				</div>
-			</section>
-
-			<section class="band">
-				<h2>Pricing, in one glance</h2>
-				<table class="teaser">
-					<thead>
-						<tr><th>Plan</th><th>Monitors</th><th>Price</th></tr>
-					</thead>
-					<tbody>
-						{
-							PLANS.map((p) => (
-								<tr>
-									<td>{p.name}</td>
-									<td class="mono">{p.monitors}</td>
-									<td>
-										{p.price} <span class="muted small">{p.cadence}</span>
-									</td>
-								</tr>
-							))
-						}
-					</tbody>
-				</table>
-				<p><a class="button" href="/pricing/">See what is included</a></p>
 			</section>
 		</main>
 		<Footer />
@@ -170,28 +98,75 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 
 <style>
 	.hero {
-		display: grid;
-		grid-template-columns: 1.05fr 1fr;
-		gap: 2.5em;
-		align-items: center;
-		padding: 2em 0 1em;
+		padding: 3em 0 1em;
+		max-width: 38em;
 	}
 	.dim {
 		color: var(--muted);
 	}
 	.lede {
-		font-size: 1.1rem;
+		font-size: 1.12rem;
 		color: var(--muted);
-		max-width: 34em;
 	}
 	.cta {
 		display: flex;
 		gap: 0.7em;
 		flex-wrap: wrap;
-		margin: 1.4em 0 0.6em;
+		margin: 1.5em 0 1.2em;
 	}
-	.fineprint {
-		font-size: 0.85rem;
+	.free {
+		display: flex;
+		align-items: baseline;
+		gap: 0.7em;
+		flex-wrap: wrap;
+		font-size: 0.9rem;
+		color: var(--muted);
+		padding: 0.8em 1em;
+		border: 1px solid var(--alive-dim);
+		border-radius: var(--radius);
+		background: var(--surface);
+	}
+
+	.services {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: 1.2em;
+		margin-top: 2.5em;
+	}
+	.service {
+		display: flex;
+		flex-direction: column;
+		text-decoration: none;
+		color: var(--text);
+		transition: border-color 0.15s ease, transform 0.15s ease;
+	}
+	.service:hover {
+		border-color: var(--alive-dim);
+		transform: translateY(-2px);
+	}
+	.service .tag {
+		align-self: flex-start;
+	}
+	.service h2 {
+		margin: 0.6em 0 0.35em;
+		font-size: 1.5rem;
+	}
+	.host {
+		align-self: flex-start;
+	}
+	.summary {
+		color: var(--muted);
+		margin: 0.9em 0 1em;
+		font-size: 0.95rem;
+	}
+	.service pre {
+		font-size: 0.75rem;
+		margin: 0 0 1.1em;
+	}
+	.more {
+		margin-top: auto;
+		color: var(--link);
+		font-size: 0.92rem;
 	}
 
 	.band {
@@ -201,103 +176,27 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 		max-width: 46em;
 		color: var(--muted);
 	}
-	.small {
-		font-size: 0.85rem;
-	}
-	.mono {
-		font-family: var(--mono);
-		font-size: 0.85rem;
-	}
-
-	.two {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 1.2em;
-		margin-top: 1.4em;
-	}
-	.alive-edge {
-		border-color: var(--alive-dim);
-	}
-	ul.plain {
-		list-style: none;
-		margin: 1em 0 0;
-		padding: 0;
-		font-size: 0.95rem;
-	}
-	ul.plain li {
-		padding-left: 1.3em;
-		position: relative;
-		margin-bottom: 0.6em;
-		color: var(--muted);
-	}
-	ul.plain li::before {
-		content: "·";
-		position: absolute;
-		left: 0.3em;
-	}
-	.alive-edge ul.plain li::before {
-		content: "✓";
-		color: var(--alive);
-		left: 0;
-	}
-
-	.steps {
+	ul.shared {
 		list-style: none;
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 1.2em;
-		margin: 1.4em 0 0;
-		padding: 0;
-	}
-	.steps li {
-		border-top: 2px solid var(--border);
-		padding-top: 1em;
-	}
-	.steps .n {
-		font-family: var(--mono);
-		color: var(--alive);
-		font-size: 0.8rem;
-	}
-	.steps h3 {
-		font-size: 1.05rem;
-		margin: 0.2em 0 0.4em;
-	}
-	.steps p {
-		color: var(--muted);
-		font-size: 0.93rem;
-		margin: 0;
-	}
-
-	/* auto-fit so the grid stays full-width as services are added or parked */
-	.services {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-		gap: 1.2em;
-		margin-top: 1.4em;
-	}
-	.service h3 {
-		margin: 0.6em 0 0.3em;
-	}
-	.service p.muted {
-		font-size: 0.93rem;
-		margin: 0.8em 0 0.6em;
-	}
-
-	table.teaser {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 0.6em 1.5em;
 		margin: 1.2em 0 1.6em;
-		max-width: 34em;
+		padding: 0;
 	}
-	table.teaser th {
-		font-size: 0.78rem;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
+	ul.shared li {
+		position: relative;
+		padding-left: 1.6em;
 		color: var(--muted);
 	}
-
-	@media (max-width: 860px) {
-		.hero,
-		.two,
-		.steps {
+	ul.shared li::before {
+		content: "✓";
+		position: absolute;
+		left: 0;
+		color: var(--alive);
+	}
+	@media (max-width: 720px) {
+		ul.shared {
 			grid-template-columns: 1fr;
 		}
 	}

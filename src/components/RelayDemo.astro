@@ -1,0 +1,167 @@
+---
+// Relay's demo is its run log: calls firing on schedule, one failing, retried,
+// and the alert that follows. One 14s CSS loop, no JavaScript.
+const rows = [
+	{ time: "03:00", status: "200", detail: "412ms", state: "ok" },
+	{ time: "04:00", status: "200", detail: "388ms", state: "ok" },
+	{ time: "05:00", status: "500", detail: "attempt 1/3", state: "warn" },
+	{ time: "05:00", status: "500", detail: "attempt 2/3", state: "warn" },
+	{ time: "05:00", status: "500", detail: "attempt 3/3", state: "bad" },
+];
+---
+
+<figure class="demo">
+	<figcaption class="head">
+		<code>0 * * * * · Europe/Oslo</code>
+		<code class="target">POST /jobs/sync</code>
+	</figcaption>
+
+	<ol class="log">
+		{
+			rows.map((row, index) => (
+				<li class:list={["row", row.state]} style={`--i: ${index}`}>
+					<span class="time">{row.time}</span>
+					<span class="arrow">→</span>
+					<span class="status">{row.status}</span>
+					<span class="detail">{row.detail}</span>
+				</li>
+			))
+		}
+	</ol>
+
+	<output class="alert">
+		<span aria-hidden="true">🔴</span> Schedule <b>sync</b> failed: endpoint returned HTTP 500
+		(3 attempts).
+	</output>
+</figure>
+
+<style>
+	.demo {
+		--loop: 12s;
+		margin: 0;
+		background: linear-gradient(180deg, var(--surface) 0%, #0d131b 100%);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		padding: 1.1em 1.2em 1.3em;
+		box-shadow: var(--box-shadow);
+	}
+
+	.head {
+		display: flex;
+		justify-content: space-between;
+		gap: 1em;
+		margin-bottom: 0.9em;
+		flex-wrap: wrap;
+	}
+	.head code {
+		background: none;
+		border: none;
+		padding: 0;
+		color: var(--muted);
+		font-size: 0.78rem;
+	}
+	.head .target {
+		color: var(--alive);
+	}
+
+	.log {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		font-family: var(--mono);
+		font-size: 0.82rem;
+	}
+	.row {
+		display: grid;
+		grid-template-columns: 3.4em 1.2em 3em 1fr;
+		align-items: center;
+		gap: 0.4em;
+		padding: 0.32em 0;
+		border-bottom: 1px solid rgba(34, 48, 65, 0.6);
+		opacity: 0;
+		/* The log fills in over the first ~2.5s, then holds: a visitor landing
+		   mid-loop should see a full log, not an empty box. */
+		animation: appear var(--loop) infinite;
+		animation-delay: calc(var(--i) * 0.5s);
+	}
+	.time {
+		color: var(--muted);
+	}
+	.arrow {
+		color: var(--border);
+	}
+	.status {
+		font-weight: 700;
+	}
+	.detail {
+		color: var(--muted);
+	}
+	.ok .status {
+		color: var(--alive);
+	}
+	.warn .status {
+		color: #fbbf5c;
+	}
+	.bad .status {
+		color: var(--alert);
+	}
+
+	.alert {
+		display: block;
+		margin-top: 0.9em;
+		padding: 0.75em 0.9em;
+		border-radius: 10px;
+		border: 1px solid var(--alert-dim);
+		background: var(--alert-dim);
+		font-size: 0.85rem;
+		opacity: 0;
+		transform: translateY(6px);
+		animation: showAlert var(--loop) infinite;
+	}
+	.alert b {
+		font-family: var(--mono);
+	}
+
+	@keyframes appear {
+		0% {
+			opacity: 0;
+			transform: translateY(-3px);
+		}
+		3%,
+		90% {
+			opacity: 1;
+			transform: none;
+		}
+		96%,
+		100% {
+			opacity: 0;
+			transform: none;
+		}
+	}
+	@keyframes showAlert {
+		0%,
+		26% {
+			opacity: 0;
+			transform: translateY(6px);
+		}
+		32%,
+		90% {
+			opacity: 1;
+			transform: translateY(0);
+		}
+		96%,
+		100% {
+			opacity: 0;
+			transform: translateY(6px);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.row,
+		.alert {
+			animation: none;
+			opacity: 1;
+			transform: none;
+		}
+	}
+</style>
