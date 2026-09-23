@@ -9,6 +9,9 @@ export const CONTACT_EMAIL = "hello@nano-api.com";
 export const X_URL = "https://x.com/gautes";
 export const X_HANDLE = "@gautes";
 export const GITHUB_URL = "https://github.com/gsmalano-creator/nano-pulse";
+/** A real deployment on someone's own server, using all four services. */
+export const EXAMPLE_URL = "https://underdata.no/marketwatch/";
+export const EXAMPLE_REPO = "https://github.com/gsmalano-creator/nano-marketwatch";
 export const PULSE_BASE = "https://pulse.nano-api.com";
 export const RELAY_BASE = "https://relay.nano-api.com";
 export const LOCK_BASE = "https://lock.nano-api.com";

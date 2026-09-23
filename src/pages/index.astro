@@ -3,7 +3,7 @@ import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import AlertDemo from "../components/AlertDemo.astro";
-import { CONTACT_EMAIL, SERVICES, SITE_DESCRIPTION, SITE_TITLE, WHAT_YOU_GET, X_HANDLE, X_URL } from "../consts";
+import { CONTACT_EMAIL, EXAMPLE_REPO, EXAMPLE_URL, SERVICES, SITE_DESCRIPTION, SITE_TITLE, WHAT_YOU_GET, X_HANDLE, X_URL } from "../consts";
 
 const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
   -d '{"alert_webhook_url": "https://hooks.slack.com/services/..."}'`;
@@ -39,6 +39,7 @@ const snippets: Record<string, string> = {
 				<p class="cta">
 					<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get a free API key</a>
 					<a class="button secondary" href="/howto/">How to, in curl</a>
+					<a class="button secondary" href={EXAMPLE_URL} rel="noopener" target="_blank">See it in action</a>
 				</p>
 				<p class="free">
 					<span class="tag live">Free</span>
@@ -80,6 +81,21 @@ const snippets: Record<string, string> = {
 				<ul class="shared">
 					{WHAT_YOU_GET.map((item) => <li>{item}</li>)}
 				</ul>
+			</section>
+
+			<section class="band">
+				<h2>See it in action</h2>
+				<p>
+					<a href={EXAMPLE_URL} rel="noopener" target="_blank">A stock ticker on someone's own
+					server</a> uses all four: Relay calls it, Lock keeps the run to one copy, Config decides
+					which tickers, Pulse notices if it stops. The panel at the bottom of that page shows what
+					each service did in the last cycle — it is the product watching itself.
+				</p>
+				<p>
+					<a href={EXAMPLE_REPO} rel="noopener" target="_blank">The source is 545 lines with no
+					dependencies</a>, including the shell pattern for taking a lock and the ping that turns
+					silence into an alert.
+				</p>
 			</section>
 
 			<section class="band">
