@@ -12,6 +12,7 @@ export const GITHUB_URL = "https://github.com/gsmalano-creator/nano-pulse";
 export const PULSE_BASE = "https://pulse.nano-api.com";
 export const RELAY_BASE = "https://relay.nano-api.com";
 export const LOCK_BASE = "https://lock.nano-api.com";
+export const CONFIG_BASE = "https://configmaps.nano-api.com";
 
 /**
  * Everything is free while the service is young, so there is no plan catalogue
@@ -52,6 +53,14 @@ export const SERVICES: Service[] = [
 		summary:
 			"We call your endpoint on a schedule, with timezone-correct timing, retries, and alerts when it fails.",
 		href: "/relay/",
+	},
+	{
+		name: "NanoConfig",
+		status: "live",
+		host: "configmaps.nano-api.com",
+		summary:
+			"Small JSON documents you can change without a deploy. Versioned, conditionally writable, cheap to poll.",
+		href: "/config/",
 	},
 	{
 		name: "NanoLock",

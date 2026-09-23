@@ -1,0 +1,185 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import ConfigDemo from "../components/ConfigDemo.astro";
+import { CONFIG_BASE, CONTACT_EMAIL, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
+
+const write = `curl -X PUT ${CONFIG_BASE}/v1/configs/checkout \\
+  -H "Authorization: Bearer $NANO_API_KEY" -H 'content-type: application/json' \\
+  -d '{"maintenance": false, "max_items": 50}'`;
+
+const flip = `curl -X PATCH "${CONFIG_BASE}/v1/configs/checkout?note=incident-4711" \\
+  -H "Authorization: Bearer $NANO_API_KEY" -H 'content-type: application/json' \\
+  -H 'if-match: "7"' -d '{"maintenance": true}'`;
+
+const read = `curl -s ${CONFIG_BASE}/v1/configs/checkout/keys/maintenance \\
+  -H "Authorization: Bearer $NANO_API_KEY"
+# {"name":"checkout","key":"maintenance","value":true,"version":8}`;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead
+			title={`NanoConfig — ${SITE_TITLE}`}
+			description="Small JSON documents you can change without a deploy. Versioned, conditionally writable, and cheap to poll."
+		/>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section class="hero">
+				<div>
+					<p class="eyebrow">nano-api / config</p>
+					<h1>Flip the switch<br /><span class="dim">without a deploy.</span></h1>
+					<p class="lede">
+						Small JSON documents, read hot and written rarely. Kill switches, feature flags,
+						limits — the things you should not have to redeploy for.
+					</p>
+					<p class="cta">
+						<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get a free API key</a>
+						<a class="button secondary" href="/howto/#config">Curl walkthrough</a>
+					</p>
+					<p class="fineprint muted">
+						Free. Mail <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or ping
+						<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X.
+					</p>
+				</div>
+				<ConfigDemo />
+			</section>
+
+			<section class="band">
+				<h2>Write it once</h2>
+				<pre><code>{write}</code></pre>
+				<p class="muted small">
+					<code>PATCH</code> merges keys and <code>null</code> removes one. Read the whole document,
+					or a single value when that is all you need.
+				</p>
+				<pre><code>{read}</code></pre>
+			</section>
+
+			<section class="band">
+				<h2>Three decisions that matter</h2>
+				<ol class="steps">
+					<li>
+						<span class="n">1</span>
+						<h3>Polling is free</h3>
+						<p>
+							Reads carry an <code>ETag</code>. Send <code>If-None-Match</code> and an unchanged
+							document answers <code>304</code> with no body — check every few seconds if you like.
+						</p>
+					</li>
+					<li>
+						<span class="n">2</span>
+						<h3>Writers cannot clobber</h3>
+						<p>
+							<code>If-Match: "7"</code> writes only if nothing moved. The check and the write are
+							one statement; the loser gets <code>412</code> with both version numbers.
+						</p>
+					</li>
+					<li>
+						<span class="n">3</span>
+						<h3>Rollback moves forward</h3>
+						<p>
+							Restoring v1 writes its content as a new version. The counter never rewinds, so a
+							cached version number can never mean two things.
+						</p>
+					</li>
+				</ol>
+			</section>
+
+			<section class="band">
+				<h2>The kill switch, mid-incident</h2>
+				<pre><code>{flip}</code></pre>
+				<p class="muted small">
+					The last 20 versions are kept with the note you pass. That is what you read afterwards to
+					see who flipped what, and when.
+				</p>
+			</section>
+
+			<section class="band">
+				<h2>Pairs with the others</h2>
+				<p>
+					Keep the schedule <a href="/relay/">Relay</a> calls, the window
+					<a href="/pulse/">Pulse</a> watches, and the switch that pauses both — in one document,
+					changed from anywhere.
+				</p>
+				<p class="cta">
+					<a class="button" href="/howto/">How to, in curl</a>
+					<a class="button secondary" href="/pricing/">What it costs</a>
+				</p>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	.hero {
+		display: grid;
+		grid-template-columns: 1.05fr 1fr;
+		gap: 2.5em;
+		align-items: center;
+		padding: 2em 0 1em;
+	}
+	.dim {
+		color: var(--muted);
+	}
+	.lede {
+		font-size: 1.1rem;
+		color: var(--muted);
+		max-width: 34em;
+	}
+	.cta {
+		display: flex;
+		gap: 0.7em;
+		flex-wrap: wrap;
+		margin: 1.4em 0 0.6em;
+	}
+	.fineprint {
+		font-size: 0.85rem;
+	}
+	.band {
+		padding: 3em 0 0;
+	}
+	.band > p {
+		max-width: 46em;
+		color: var(--muted);
+	}
+	.small {
+		font-size: 0.85rem;
+	}
+	.steps {
+		list-style: none;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.2em;
+		margin: 1.4em 0 0;
+		padding: 0;
+	}
+	.steps li {
+		border-top: 2px solid var(--border);
+		padding-top: 1em;
+	}
+	.steps .n {
+		font-family: var(--mono);
+		color: var(--alive);
+		font-size: 0.8rem;
+	}
+	.steps h3 {
+		font-size: 1.05rem;
+		margin: 0.2em 0 0.4em;
+	}
+	.steps p {
+		color: var(--muted);
+		font-size: 0.93rem;
+		margin: 0;
+	}
+	@media (max-width: 860px) {
+		.hero,
+		.steps {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

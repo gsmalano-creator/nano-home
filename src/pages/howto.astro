@@ -2,7 +2,7 @@
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import { CONTACT_EMAIL, LOCK_BASE, SERVICES, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
+import { CONFIG_BASE, CONTACT_EMAIL, LOCK_BASE, SERVICES, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
 
 const relay = SERVICES.find((s) => s.name === "NanoRelay");
 const relayIsLive = relay?.status === "live";
@@ -11,6 +11,7 @@ const setup = `export KEY=np_live_...              # the key you were sent
 export PULSE=https://pulse.nano-api.com
 export RELAY=https://relay.nano-api.com
 export LOCK=https://lock.nano-api.com
+export CONFIG=https://configmaps.nano-api.com
 auth=(-H "Authorization: Bearer $KEY" -H 'content-type: application/json')`;
 
 const firstPing = `curl -X POST "$PULSE/v1/ping/nightly-backup?interval=86400&grace=3600" "\${auth[@]}"`;
@@ -101,6 +102,21 @@ const lockRenew = `curl -X POST "$LOCK/v1/locks/nightly-import/renew?token=$TOKE
 const lockStatus = `curl -s "$LOCK/v1/locks" "\${auth[@]}" | jq
 # [{ "name": "nightly-import", "held": true, "owner": "pod-a", "fence": 8, "expires_at": "..." }]`;
 
+const configWrite = `curl -X PUT "$CONFIG/v1/configs/checkout" "\${auth[@]}" \\
+  -d '{"maintenance": false, "max_items": 50}'`;
+
+const configFlip = `curl -X PATCH "$CONFIG/v1/configs/checkout?note=incident-4711" "\${auth[@]}" \\
+  -H 'if-match: "7"' -d '{"maintenance": true}'
+# 412 if someone wrote first, with both version numbers in the body`;
+
+const configRead = `curl -s "$CONFIG/v1/configs/checkout" "\${auth[@]}" -H 'if-none-match: "8"' -o /dev/null -w '%{http_code}\\n'
+# 304 while nothing changes — poll as often as you like
+
+curl -s "$CONFIG/v1/configs/checkout/keys/maintenance" "\${auth[@]}"`;
+
+const configRollback = `curl -s "$CONFIG/v1/configs/checkout/revisions" "\${auth[@]}" | jq '.revisions[] | {version, note}'
+curl -X POST "$CONFIG/v1/configs/checkout/rollback" "\${auth[@]}" -d '{"to": 7}'`;
+
 const keys = `curl -s "$PULSE/v1/keys" "\${auth[@]}" | jq            # prefixes, last used, active
 curl -X POST "$PULSE/v1/keys" "\${auth[@]}" -d '{"name":"CI"}'  # new key, shown once
 curl -X DELETE "$PULSE/v1/keys/key_abc123" \\
@@ -134,6 +150,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 					<a href="#prove">Prove the alert works</a>
 					<a href="#relay">Relay: run a job</a>
 					<a href="#lock">Lock: run it once</a>
+					<a href="#config">Config: change it without a deploy</a>
 					<a href="#together">All of them together</a>
 					<a href="#keys">Keys and quota</a>
 				</nav>
@@ -243,6 +260,26 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 				<p class="muted">
 					Only the holder can release or renew; a wrong token gets 409. <code>fence</code> only ever
 					increases — hand it downstream to reject a stalled holder that wakes up late.
+				</p>
+
+				<h2 id="config">Config: change it without a deploy</h2>
+				<p>A config is a small JSON document. Write the whole thing, or merge keys into it:</p>
+				<pre><code>{configWrite}</code></pre>
+
+				<p>
+					Flip a switch mid-incident. <code>If-Match</code> makes it conditional, so two people
+					reacting at once cannot silently overwrite each other:
+				</p>
+				<pre><code>{configFlip}</code></pre>
+
+				<p>Reading is cheap, and a single key is one call:</p>
+				<pre><code>{configRead}</code></pre>
+
+				<p>Every write is kept, with the note you passed — and rollback writes forward:</p>
+				<pre><code>{configRollback}</code></pre>
+				<p class="muted">
+					Restoring v7 becomes v9, never v7 again. A client caching by version number can then
+					trust that one number means one thing forever.
 				</p>
 
 				<h2 id="together">All of them together</h2>

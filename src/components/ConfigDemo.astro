@@ -1,0 +1,184 @@
+---
+// Polling a config costs a 304 until something changes. One 12s CSS loop.
+const log = [
+	{ time: "12:00:00", call: "GET", result: "304", note: "unchanged", state: "dim" },
+	{ time: "12:00:30", call: "GET", result: "304", note: "unchanged", state: "dim" },
+	{ time: "12:01:00", call: "PATCH", result: "200", note: "→ v8", state: "warn" },
+	{ time: "12:01:30", call: "GET", result: "200", note: "v8", state: "ok" },
+];
+---
+
+<figure class="demo">
+	<figcaption class="head">
+		<code>/v1/configs/checkout</code>
+		<span class="ver">
+			<span class="v a">v7</span><span class="v b">v8</span>
+		</span>
+	</figcaption>
+
+	<pre class="doc"><code>{"{"}
+  "maintenance": <span class="flag"><span class="a">false</span><span class="b">true</span></span>,
+  "max_items": 50
+{"}"}</code></pre>
+
+	<ol class="log">
+		{
+			log.map((row, index) => (
+				<li class:list={["row", row.state]} style={`--i: ${index}`}>
+					<span class="t">{row.time}</span>
+					<span class="c">{row.call}</span>
+					<span class="r">{row.result}</span>
+					<span class="n">{row.note}</span>
+				</li>
+			))
+		}
+	</ol>
+</figure>
+
+<style>
+	.demo {
+		--loop: 12s;
+		margin: 0;
+		background: linear-gradient(180deg, var(--surface) 0%, #0d131b 100%);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		padding: 1.1em 1.2em 1.2em;
+		box-shadow: var(--box-shadow);
+	}
+	.head {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		margin-bottom: 0.9em;
+	}
+	.head code {
+		background: none;
+		border: none;
+		padding: 0;
+		color: var(--muted);
+		font-size: 0.78rem;
+	}
+	.ver {
+		position: relative;
+		display: inline-block;
+		width: 2em;
+		height: 1em;
+		font-family: var(--mono);
+		font-size: 0.78rem;
+	}
+	.v {
+		position: absolute;
+		right: 0;
+		color: var(--alive);
+	}
+	.doc {
+		margin: 0 0 1em;
+		font-size: 0.78rem;
+		background: #0b1119;
+	}
+	.flag {
+		position: relative;
+		display: inline-block;
+		min-width: 3.2em;
+	}
+	.flag .a {
+		color: var(--muted);
+	}
+	.flag .b {
+		position: absolute;
+		left: 0;
+		color: var(--alert);
+	}
+	/* Everything marked .a belongs to the first half of the loop, .b the second. */
+	:global(.demo .a) {
+		animation: phaseA var(--loop) infinite;
+	}
+	:global(.demo .b) {
+		animation: phaseB var(--loop) infinite;
+	}
+
+	.log {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		font-family: var(--mono);
+		font-size: 0.75rem;
+	}
+	.row {
+		display: grid;
+		grid-template-columns: 5.5em 3.6em 2.6em 1fr;
+		gap: 0.4em;
+		padding: 0.3em 0;
+		border-top: 1px solid rgba(34, 48, 65, 0.6);
+		opacity: 0;
+		animation: appear var(--loop) infinite;
+		animation-delay: calc(var(--i) * 0.6s);
+	}
+	.t,
+	.n {
+		color: var(--muted);
+	}
+	.c {
+		color: var(--text);
+	}
+	.dim .r {
+		color: var(--muted);
+	}
+	.warn .r {
+		color: #fbbf5c;
+	}
+	.ok .r {
+		color: var(--alive);
+	}
+
+	@keyframes appear {
+		0% {
+			opacity: 0;
+		}
+		4%,
+		92% {
+			opacity: 1;
+		}
+		97%,
+		100% {
+			opacity: 0;
+		}
+	}
+	@keyframes phaseA {
+		0%,
+		48% {
+			opacity: 1;
+		}
+		52%,
+		100% {
+			opacity: 0;
+		}
+	}
+	@keyframes phaseB {
+		0%,
+		48% {
+			opacity: 0;
+		}
+		52%,
+		100% {
+			opacity: 1;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		:global(.demo .a),
+		:global(.demo .b),
+		.row {
+			animation: none;
+		}
+		:global(.demo .a) {
+			opacity: 1;
+		}
+		:global(.demo .b) {
+			opacity: 0;
+		}
+		.row {
+			opacity: 1;
+		}
+	}
+</style>

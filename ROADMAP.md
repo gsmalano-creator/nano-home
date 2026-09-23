@@ -8,6 +8,35 @@ list — only put something there once you intend to be asked about it.
 - **NanoPulse** — `pulse.nano-api.com`. Heartbeat monitoring. Shipped 2026-09-22.
 - **NanoRelay** — `relay.nano-api.com`. Scheduled calls with retries and alerts. Shipped
   2026-09-23. Notes below kept because they explain the design decisions.
+- **NanoLock** — `lock.nano-api.com`. Leased mutual exclusion with a fencing counter. Shipped
+  2026-09-23.
+- **NanoConfig** — `configmaps.nano-api.com`. Versioned JSON documents. Shipped 2026-09-23.
+
+## Where NanoConfig sits next to LaunchDarkly
+
+It is not LaunchDarkly-minus; it is a different product with an overlapping table.
+
+What they sell and we do not: **targeting**. Rules per user, segment and percentage, evaluated
+*locally* by an SDK that holds the flags in memory and receives changes over a stream — so a flag
+lookup is a function call, not an HTTP request. On top of that: experiments with metrics,
+environments, approval flows, an audit log, RBAC and SSO.
+
+The overlap is the storage, which is the cheap part. The expensive part is the evaluation.
+
+What is true: for one developer with five flags and a kill switch, a JSON document with an ETag
+and `If-Match` is the whole need, and LaunchDarkly is priced for a different problem. Same wedge
+as flat pricing against per-monitor pricing.
+
+Two things would close the gaps that actually hurt, in this order:
+
+1. **Environments.** `checkout.prod` and `checkout.staging` as separate documents already work
+   today — it is a naming convention that needs documenting, not a feature.
+2. **Push instead of polling.** A Durable Object holding an SSE connection per subscriber, so a
+   change lands in milliseconds and clients stop asking. This is the real gap, and the reason
+   their SDK feels instant and ours does not.
+
+Targeting is deliberately *not* next: it is where the complexity lives, and the app that reads the
+document can do percentage rollout itself with three lines.
 
 ## What makes a good nano-api service
 
