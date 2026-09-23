@@ -3,7 +3,7 @@ import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import LockDemo from "../components/LockDemo.astro";
-import { CONTACT_EMAIL, LOCK_BASE, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
+import { LOCK_BASE, SITE_TITLE } from "../consts";
 
 const usage = `# Capture the response first: piping curl into jq would hide curl's exit
 # status, and a 409 would silently leave TOKEN empty and run the job anyway.
@@ -37,12 +37,11 @@ trap 'curl -sf -X DELETE "${LOCK_BASE}/v1/locks/nightly-import?token=$TOKEN" \\
 						until you let go or your lease runs out.
 					</p>
 					<p class="cta">
-						<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get a free API key</a>
+						<a class="button" href="/howto/#setup">Get a free API key</a>
 						<a class="button secondary" href="/howto/#lock">Curl walkthrough</a>
 					</p>
 					<p class="fineprint muted">
-						Free. Mail <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or ping
-						<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X.
+						Free, and signup is one unauthenticated <code>curl</code> — no form, no card, no wait.
 					</p>
 				</div>
 				<LockDemo />

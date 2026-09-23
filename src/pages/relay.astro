@@ -3,7 +3,7 @@ import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import RelayDemo from "../components/RelayDemo.astro";
-import { CONTACT_EMAIL, RELAY_BASE, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
+import { RELAY_BASE, SITE_TITLE } from "../consts";
 
 const create = `curl -X POST ${RELAY_BASE}/v1/schedules \\
   -H "Authorization: Bearer $NANO_API_KEY" \\
@@ -36,12 +36,11 @@ const create = `curl -X POST ${RELAY_BASE}/v1/schedules \\
 						when it starts failing.
 					</p>
 					<p class="cta">
-						<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get a free API key</a>
+						<a class="button" href="/howto/#setup">Get a free API key</a>
 						<a class="button secondary" href="/howto/#relay">Curl walkthrough</a>
 					</p>
 					<p class="fineprint muted">
-						Free. Mail <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or ping
-						<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X.
+						Free, and signup is one unauthenticated <code>curl</code> — no form, no card, no wait.
 					</p>
 				</div>
 				<RelayDemo />

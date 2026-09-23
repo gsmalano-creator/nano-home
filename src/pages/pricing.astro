@@ -2,7 +2,7 @@
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import { CONTACT_EMAIL, DEFAULT_QUOTA, SITE_TITLE, WHAT_YOU_GET, X_HANDLE, X_URL } from "../consts";
+import { CONTACT_EMAIL, DEFAULT_QUOTA, SIGNUP_CURL, SITE_TITLE, WHAT_YOU_GET, X_HANDLE, X_URL } from "../consts";
 ---
 
 <!doctype html>
@@ -20,8 +20,10 @@ import { CONTACT_EMAIL, DEFAULT_QUOTA, SITE_TITLE, WHAT_YOU_GET, X_HANDLE, X_URL
 				<p class="eyebrow">Pricing</p>
 				<h1>Free, for now. All of it.</h1>
 				<p class="lede">
-					Every service, every feature, no card. Ask for a key and you get one the same day.
+					Every service, every feature, no card. Signup is one call and the key comes back in the
+					response.
 				</p>
+				<pre class="signup"><code>{SIGNUP_CURL}</code></pre>
 
 				<div class="card offer">
 					<p class="price">$0</p>
@@ -31,7 +33,7 @@ import { CONTACT_EMAIL, DEFAULT_QUOTA, SITE_TITLE, WHAT_YOU_GET, X_HANDLE, X_URL
 					<ul>
 						{WHAT_YOU_GET.map((item) => <li>{item}</li>)}
 					</ul>
-					<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get an API key</a>
+					<a class="button" href="/howto/#setup">Start in curl</a>
 				</div>
 
 				<h2>Why free</h2>
@@ -63,9 +65,11 @@ import { CONTACT_EMAIL, DEFAULT_QUOTA, SITE_TITLE, WHAT_YOU_GET, X_HANDLE, X_URL
 				<div class="qa">
 					<h3>How do I get a key?</h3>
 					<p>
-						Mail <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or ping
-						<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X. Manual on purpose:
-						a human reads every request, and there is no signup form to trust.
+						<code>POST /v1/signup</code> with an email address. No verification mail: the key is the
+						credential and the address is a label, so a click would add a mail provider and stop
+						nobody. Three per address per hour keeps it honest. Questions still go to
+						<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or
+						<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X.
 					</p>
 
 					<h3>What happens at the limit?</h3>
@@ -102,7 +106,7 @@ import { CONTACT_EMAIL, DEFAULT_QUOTA, SITE_TITLE, WHAT_YOU_GET, X_HANDLE, X_URL
 				<div class="closing card">
 					<h2>Start now, pay nothing</h2>
 					<p>{DEFAULT_QUOTA} things watched or run, upgradeable by asking.</p>
-					<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get an API key</a>
+					<a class="button" href="/howto/#setup">Start in curl</a>
 				</div>
 			</div>
 		</main>
@@ -118,6 +122,10 @@ import { CONTACT_EMAIL, DEFAULT_QUOTA, SITE_TITLE, WHAT_YOU_GET, X_HANDLE, X_URL
 	.lede {
 		color: var(--muted);
 		font-size: 1.05rem;
+	}
+	.signup {
+		font-size: 0.78rem;
+		margin: 1em 0 0;
 	}
 	.offer {
 		margin: 2em 0 1em;

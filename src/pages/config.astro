@@ -3,7 +3,7 @@ import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import ConfigDemo from "../components/ConfigDemo.astro";
-import { CONFIG_BASE, CONTACT_EMAIL, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
+import { CONFIG_BASE, SITE_TITLE } from "../consts";
 
 const write = `curl -X PUT ${CONFIG_BASE}/v1/configs/checkout \\
   -H "Authorization: Bearer $NANO_API_KEY" -H 'content-type: application/json' \\
@@ -38,12 +38,11 @@ const read = `curl -s ${CONFIG_BASE}/v1/configs/checkout/keys/maintenance \\
 						limits — the things you should not have to redeploy for.
 					</p>
 					<p class="cta">
-						<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get a free API key</a>
+						<a class="button" href="/howto/#setup">Get a free API key</a>
 						<a class="button secondary" href="/howto/#config">Curl walkthrough</a>
 					</p>
 					<p class="fineprint muted">
-						Free. Mail <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or ping
-						<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X.
+						Free, and signup is one unauthenticated <code>curl</code> — no form, no card, no wait.
 					</p>
 				</div>
 				<ConfigDemo />

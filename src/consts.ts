@@ -6,6 +6,10 @@ export const SITE_DESCRIPTION =
 	"Small, sharp APIs that each do one thing: notice when a job stops running, run it for you on schedule, and stop two copies running at once. One API key, no dashboard.";
 
 export const CONTACT_EMAIL = "hello@nano-api.com";
+
+/** Signup is one unauthenticated call; every page shows the same line. */
+export const SIGNUP_CURL = `curl -X POST https://pulse.nano-api.com/v1/signup \\
+  -H 'content-type: application/json' -d '{"email":"you@example.com"}'`;
 export const X_URL = "https://x.com/gautes";
 export const X_HANDLE = "@gautes";
 export const GITHUB_URL = "https://github.com/gsmalano-creator/nano-pulse";

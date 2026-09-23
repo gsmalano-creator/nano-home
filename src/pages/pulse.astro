@@ -4,7 +4,7 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import AlertDemo from "../components/AlertDemo.astro";
 import PulseDemo from "../components/PulseDemo.astro";
-import { CONTACT_EMAIL, PULSE_BASE, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
+import { PULSE_BASE, SITE_TITLE } from "../consts";
 
 const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
   curl -fsS -X POST -H "Authorization: Bearer $NANO_API_KEY" \\
@@ -31,12 +31,11 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 						Slack, within a minute.
 					</p>
 					<p class="cta">
-						<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get a free API key</a>
+						<a class="button" href="/howto/#setup">Get a free API key</a>
 						<a class="button secondary" href="/howto/#pulse">Curl walkthrough</a>
 					</p>
 					<p class="fineprint muted">
-						Free. Mail <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or ping
-						<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X.
+						Free, and signup is one unauthenticated <code>curl</code> — no form, no card, no wait.
 					</p>
 				</div>
 				<PulseDemo />

@@ -3,7 +3,7 @@ import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import AlertDemo from "../components/AlertDemo.astro";
-import { CONTACT_EMAIL, EXAMPLE_REPO, EXAMPLE_URL, SERVICES, SITE_DESCRIPTION, SITE_TITLE, WHAT_YOU_GET, X_HANDLE, X_URL } from "../consts";
+import { CONTACT_EMAIL, EXAMPLE_REPO, EXAMPLE_URL, SERVICES, SIGNUP_CURL, SITE_DESCRIPTION, SITE_TITLE, WHAT_YOU_GET, X_HANDLE, X_URL } from "../consts";
 
 const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
   -d '{"alert_webhook_url": "https://hooks.slack.com/services/..."}'`;
@@ -36,9 +36,10 @@ const snippets: Record<string, string> = {
 					One API key. No dashboard. Each service does one thing you would otherwise build and
 					maintain yourself.
 				</p>
+				<p class="lede">Get a key. That is the whole signup:</p>
+				<pre class="signup"><code>{SIGNUP_CURL}</code></pre>
 				<p class="cta">
-					<a class="button" href={`mailto:${CONTACT_EMAIL}?subject=nano-api%20key`}>Get a free API key</a>
-					<a class="button secondary" href="/howto/">How to, in curl</a>
+					<a class="button" href="/howto/">How to, in curl</a>
 					<a class="button secondary" href={EXAMPLE_URL} rel="noopener" target="_blank">See it in action</a>
 				</p>
 				<p class="free">
@@ -136,6 +137,10 @@ const snippets: Record<string, string> = {
 	.lede {
 		font-size: 1.12rem;
 		color: var(--muted);
+	}
+	.signup {
+		font-size: 0.78rem;
+		margin: 0.4em 0 1.2em;
 	}
 	.cta {
 		display: flex;

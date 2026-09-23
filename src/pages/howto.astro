@@ -2,7 +2,7 @@
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import { CONFIG_BASE, CONTACT_EMAIL, LOCK_BASE, SERVICES, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
+import { CONFIG_BASE, CONTACT_EMAIL, LOCK_BASE, SERVICES, SIGNUP_CURL, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
 
 const relay = SERVICES.find((s) => s.name === "NanoRelay");
 const relayIsLive = relay?.status === "live";
@@ -156,9 +156,12 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 				</nav>
 
 				<h2 id="setup">Setup</h2>
-				<p>
-					Get a key from <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or
-					<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X, then:
+				<p>Get a key. No form, no verification mail, no waiting:</p>
+				<pre><code>{SIGNUP_CURL}</code></pre>
+				<p class="muted">
+					The key is in the response and nowhere else — only its hash is stored. Three signups per
+					address per hour, in case you were wondering where the limit is. Then, in the shell you
+					are about to work in:
 				</p>
 				<pre><code>{setup}</code></pre>
 				<p class="muted">
