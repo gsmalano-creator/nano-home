@@ -26,16 +26,17 @@ const snippets: Record<string, string> = {
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={`${SITE_TITLE} — schedules, locks, config, counters and heartbeats as HTTP endpoints`} description={SITE_DESCRIPTION} />
+		<BaseHead title={`${SITE_TITLE} — small tools, one job each, over HTTP`} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
 		<Header />
 		<main>
 			<section class="hero">
 				<p class="eyebrow">nano-api</p>
-				<h1>Schedules, locks, config, counters and heartbeats <span class="dim">— as plain HTTP endpoints.</span></h1>
+				<h1>Small tools, one job each. <span class="dim">Over HTTP.</span></h1>
 				<p class="lede">
-					One API key, no dashboard, and nothing of yours to keep running — on Cloudflare's edge.
+					Schedules, locks, config, counters and heartbeats. One API key, no dashboard, and
+					nothing of yours to keep running — on Cloudflare's edge.
 				</p>
 				<p class="lede">Get a key. That is the whole signup:</p>
 				<pre class="signup"><code>{SIGNUP_CURL}</code></pre>
