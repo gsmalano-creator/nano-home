@@ -26,14 +26,14 @@ const snippets: Record<string, string> = {
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={`${SITE_TITLE} — schedules, locks, config and heartbeats as HTTP endpoints`} description={SITE_DESCRIPTION} />
+		<BaseHead title={`${SITE_TITLE} — schedules, locks, config, counters and heartbeats as HTTP endpoints`} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
 		<Header />
 		<main>
 			<section class="hero">
 				<p class="eyebrow">nano-api</p>
-				<h1>Schedules, locks, config and heartbeats <span class="dim">— as four HTTP endpoints.</span></h1>
+				<h1>Schedules, locks, config, counters and heartbeats <span class="dim">— as plain HTTP endpoints.</span></h1>
 				<p class="lede">
 					One API key, no dashboard, and nothing of yours to keep running — on Cloudflare's edge.
 				</p>
@@ -89,9 +89,10 @@ const snippets: Record<string, string> = {
 				<h2>See it in action</h2>
 				<p>
 					<a href={EXAMPLE_URL} rel="noopener" target="_blank">A stock ticker on someone's own
-					server</a> uses all four: Relay calls it, Lock keeps the run to one copy, Config decides
-					which tickers, Pulse notices if it stops. The panel at the bottom of that page shows what
-					each service did in the last cycle — it is the product watching itself.
+					server</a> uses every one of them: Relay calls it, Lock keeps the run to one copy, Config decides
+					which tickers, Count tallies the runs, Pulse notices if it stops. The panel at the bottom of
+					that page shows what each service did in the last cycle — it is the product watching
+					itself.
 				</p>
 				<p>
 					<a href={EXAMPLE_REPO} rel="noopener" target="_blank">The source is 545 lines with no

@@ -3,7 +3,7 @@
 
 export const SITE_TITLE = "nano-api";
 export const SITE_DESCRIPTION =
-	"Four HTTP endpoints for what you would otherwise run a server for: heartbeat monitoring for cron jobs, scheduled calls, distributed locks and versioned config. One API key, no dashboard.";
+	"Plain HTTP endpoints for what you would otherwise run a server for: heartbeat monitoring for cron jobs, scheduled calls, distributed locks, versioned config and counters. One API key, no dashboard.";
 
 export const CONTACT_EMAIL = "hello@nano-api.com";
 
@@ -13,7 +13,7 @@ export const SIGNUP_CURL = `curl -X POST https://pulse.nano-api.com/v1/signup \\
 export const X_URL = "https://x.com/gautes";
 export const X_HANDLE = "@gautes";
 export const GITHUB_URL = "https://github.com/gsmalano-creator/nano-pulse";
-/** A real deployment on someone's own server, using all four services. */
+/** A real deployment on someone's own server, using every service. */
 export const EXAMPLE_URL = "https://underdata.no/marketwatch/";
 export const EXAMPLE_REPO = "https://github.com/gsmalano-creator/nano-marketwatch";
 export const PULSE_BASE = "https://pulse.nano-api.com";
