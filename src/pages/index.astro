@@ -30,8 +30,9 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 			<section class="hero">
 				<div>
 					<p class="eyebrow">nano-api / pulse</p>
-					<h1>Your backup job died at 03:14.<br /><span class="dim">Nobody noticed until Monday.</span></h1>
+					<h1>Your backup job died at 03:14 Sunday morning.<br /><span class="dim">Nobody noticed until Monday.</span></h1>
 					<p class="lede">
+						Add a heartbeat to your service with minimal effort!
 						NanoPulse tells you when a job you depend on has stopped running — a backup, an export,
 						a queue worker. It pings us each time it succeeds, and when the ping stops arriving you
 						hear about it in Slack within five minutes.
@@ -88,6 +89,7 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 
 			<section class="band">
 				<h2>How it works</h2>
+				<h3>Built on top of Cloudflare - solid monitoring for you</h3>
 				<ol class="steps">
 					<li>
 						<span class="n">1</span>
@@ -102,7 +104,7 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 						<h3>We do the counting</h3>
 						<p>
 							Every monitor has an expected interval and a grace period. A scheduled sweep at the
-							edge checks, every five minutes, who has gone quiet.
+							edge checks, every minute, who has gone quiet.
 						</p>
 					</li>
 					<li>
@@ -117,7 +119,7 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 			</section>
 
 			<section class="band">
-				<h2>The family</h2>
+				<h2>The nano family of apis</h2>
 				<p>
 					Each service is a single subdomain, one API key, and one job it does well. No dashboard you
 					have to learn.

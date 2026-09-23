@@ -15,7 +15,7 @@ export const PULSE_BASE = "https://pulse.nano-api.com";
 export const SHARED_FEATURES = [
 	"Unlimited pings",
 	"Slack and webhook alerts",
-	"Detection within 5 minutes of a missed deadline",
+	"Detection within 60 seconds of a missed deadline",
 	"Ping payloads up to 2 KB, kept and searchable",
 	"Failure reporting (?status=fail) and recovery alerts",
 	"Multiple API keys per account, with self-service rotation and revocation",

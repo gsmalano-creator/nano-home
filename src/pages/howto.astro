@@ -1,0 +1,287 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { CONTACT_EMAIL, SERVICES, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
+
+const relay = SERVICES.find((s) => s.name === "NanoRelay");
+const relayIsLive = relay?.status === "live";
+
+const setup = `export KEY=np_live_...              # the key you were sent
+export PULSE=https://pulse.nano-api.com
+export RELAY=https://relay.nano-api.com
+auth=(-H "Authorization: Bearer $KEY" -H 'content-type: application/json')`;
+
+const firstPing = `curl -X POST "$PULSE/v1/ping/nightly-backup?interval=86400&grace=3600" "\${auth[@]}"`;
+
+const crontab = `0 3 * * * /usr/local/bin/backup.sh && curl -fsS -X POST \\
+  -H "Authorization: Bearer $KEY" \\
+  https://pulse.nano-api.com/v1/ping/nightly-backup`;
+
+const pingPayload = `curl -X POST "$PULSE/v1/ping/nightly-backup" "\${auth[@]}" \\
+  -d '{"rows_exported": 12043, "duration_s": 94}'`;
+
+const alerts = `curl -X PATCH "$PULSE/v1/monitors/nightly-backup" "\${auth[@]}" \\
+  -d '{"alert_webhook_url": "https://hooks.slack.com/services/..."}'`;
+
+const proveIt = `# 1. a monitor with the shortest allowed window
+curl -X POST "$PULSE/v1/monitors" "\${auth[@]}" \\
+  -d '{"slug":"alert-test","expected_interval_seconds":30,"grace_period_seconds":0,
+       "alert_webhook_url":"https://hooks.slack.com/services/..."}'
+
+# 2. one ping, so it has something to miss
+curl -X POST "$PULSE/v1/ping/alert-test" "\${auth[@]}"
+
+# 3. let the window pass, then run the sweep yourself
+sleep 35
+curl -X POST "$PULSE/v1/checks/run" "\${auth[@]}"      # -> 🔴 in Slack
+
+# 4. ping again to recover, then clean up
+curl -X POST "$PULSE/v1/ping/alert-test" "\${auth[@]}"  # -> 🟢 in Slack
+curl -X DELETE "$PULSE/v1/monitors/alert-test" "\${auth[@]}"`;
+
+const inspect = `curl -s "$PULSE/v1/monitors/nightly-backup" "\${auth[@]}" | jq`;
+
+const reportFailure = `curl -X POST "$PULSE/v1/ping/nightly-backup?status=fail" "\${auth[@]}"`;
+
+const pauseMonitor = `curl -X PATCH "$PULSE/v1/monitors/nightly-backup" "\${auth[@]}" -d '{"paused": true}'`;
+
+const createSchedule = `curl -X POST "$RELAY/v1/schedules" "\${auth[@]}" -d '{
+  "slug": "nightly-report",
+  "cron": "0 3 * * *",
+  "timezone": "Europe/Oslo",
+  "url": "https://api.example.com/jobs/nightly-report",
+  "body": {"source": "relay"},
+  "max_attempts": 3,
+  "timeout_seconds": 30,
+  "alert_webhook_url": "https://hooks.slack.com/services/..."
+}'`;
+
+const runNow = `curl -X POST "$RELAY/v1/schedules/nightly-report/run" "\${auth[@]}" | jq .run`;
+
+const runNowOutput = `{
+  "outcome": "ok",
+  "status_code": 200,
+  "duration_ms": 412,
+  "response_excerpt": "{\\"ok\\":true}",
+  "error": null,
+  "attempts": 1,
+  "run_id": "752cb057-e1f9-4512-812d-8100ea1cee8d"
+}`;
+
+const scheduleHistory = `curl -s "$RELAY/v1/schedules/nightly-report" "\${auth[@]}" | jq .recent_runs`;
+
+const pauseSchedule = `curl -X PATCH "$RELAY/v1/schedules/nightly-report" "\${auth[@]}" -d '{"paused": true}'
+curl -X PATCH "$RELAY/v1/schedules/nightly-report" "\${auth[@]}" -d '{"cron": "*/15 * * * *"}'
+curl -X DELETE "$RELAY/v1/schedules/nightly-report" "\${auth[@]}"`;
+
+const both = `# Relay runs the job, and pings Pulse when the job reports success.
+curl -X POST "$RELAY/v1/schedules" "\${auth[@]}" -d '{
+  "slug": "hourly-sync",
+  "cron": "0 * * * *",
+  "url": "https://api.example.com/jobs/sync"
+}'
+
+# The job itself ends with a ping, so you are covered even if Relay
+# never calls: silence is still an alert.
+curl -X POST "$PULSE/v1/ping/hourly-sync?interval=3600&grace=600" "\${auth[@]}"`;
+
+const keys = `curl -s "$PULSE/v1/keys" "\${auth[@]}" | jq            # prefixes, last used, active
+curl -X POST "$PULSE/v1/keys" "\${auth[@]}" -d '{"name":"CI"}'  # new key, shown once
+curl -X DELETE "$PULSE/v1/keys/key_abc123" \\
+  -H "Authorization: Bearer $NEW_KEY"                          # revoke the old one`;
+
+const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
+# { "monitors": 3, "schedules": 2, "used": 5, "limit": 5, "remaining": 0 }`;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead
+			title={`How to — ${SITE_TITLE}`}
+			description="Copy-paste curl walkthroughs for NanoPulse heartbeat monitoring and NanoRelay scheduled calls."
+		/>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<div class="page">
+				<p class="eyebrow">How to</p>
+				<h1>Both services, end to end, in curl.</h1>
+				<p class="lede">
+					Everything below is copy-paste. There is no dashboard and no SDK — if you can run
+					<code>curl</code>, you have the full product.
+				</p>
+
+				<nav class="toc">
+					<a href="#setup">Setup</a>
+					<a href="#pulse">Pulse: watch a job</a>
+					<a href="#prove">Prove the alert works</a>
+					<a href="#relay">Relay: run a job</a>
+					<a href="#together">Both together</a>
+					<a href="#keys">Keys and quota</a>
+				</nav>
+
+				<h2 id="setup">Setup</h2>
+				<p>
+					Get a key by mailing <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or pinging
+					<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X. Then, in the shell you
+					are about to work in:
+				</p>
+				<pre><code>{setup}</code></pre>
+				<p class="muted">
+					Both hostnames serve the same API, so <code>$PULSE</code> and <code>$RELAY</code> are
+					interchangeable. They are separate only so the URLs read correctly in your own scripts.
+				</p>
+
+				<h2 id="pulse">Pulse: get told when a job stops running</h2>
+				<p>
+					The first ping creates the monitor. <code>interval</code> is how often you expect it,
+					<code>grace</code> is how late it may be before we call it down — both in seconds, and
+					both only read when the monitor is created.
+				</p>
+				<pre><code>{firstPing}</code></pre>
+
+				<p>In real life that line lives at the end of the job:</p>
+				<pre><code>{crontab}</code></pre>
+				<p class="muted">
+					The <code>&amp;&amp;</code> is the whole design. If the script exits non-zero the ping
+					never happens, the deadline passes, and you hear about it. You never have to remember to
+					report failures — failure is the default.
+				</p>
+
+				<p>A ping can carry up to 2 KB of context, which shows up in the monitor's history:</p>
+				<pre><code>{pingPayload}</code></pre>
+
+				<p>Send alerts somewhere. Any HTTPS webhook works; Slack needs no configuration:</p>
+				<pre><code>{alerts}</code></pre>
+
+				<p>Look at what happened — status, last ping, and the most recent pings and events:</p>
+				<pre><code>{inspect}</code></pre>
+
+				<p>
+					If the job knows it failed, it can say so instead of waiting for the deadline. This marks
+					the monitor down immediately:
+				</p>
+				<pre><code>{reportFailure}</code></pre>
+
+				<p>Going on holiday with the job disabled? Pause it so it does not page you:</p>
+				<pre><code>{pauseMonitor}</code></pre>
+
+				<h2 id="prove">Prove the alert actually works</h2>
+				<p>
+					Worth doing once, on the day you set it up, rather than discovering the webhook was wrong
+					during a real outage. <code>/v1/checks/run</code> is the same sweep the cron runs every
+					five minutes, triggered by hand so you do not have to wait:
+				</p>
+				<pre><code>{proveIt}</code></pre>
+				<p class="muted">
+					Then check <code>recent_events</code> on the monitor: <code>notified: true</code> means the
+					receiver acknowledged the alert with a 2xx. <code>false</code> means it was not delivered.
+				</p>
+
+				<h2 id="relay">Relay: have the job run for you</h2>
+				{
+					!relayIsLive && (
+						<p class="notice">
+							<span class="tag">Planned</span>
+							Relay is built but not yet serving traffic. The calls below are exactly what it
+							exposes — they will work the day it goes live.
+						</p>
+					)
+				}
+				<p>
+					A schedule is a cron expression, a timezone and a request. The timezone is the point:
+					<code>0 3 * * *</code> in <code>Europe/Oslo</code> stays at 03:00 local across daylight
+					saving, instead of drifting an hour twice a year the way a UTC-only cron does.
+				</p>
+				<pre><code>{createSchedule}</code></pre>
+
+				<p>Run it immediately to check the target is reachable. This does not move the schedule:</p>
+				<pre><code>{runNow}</code></pre>
+				<pre><code>{runNowOutput}</code></pre>
+
+				<p>Every run is kept — outcome, status code, duration, how many attempts it took:</p>
+				<pre><code>{scheduleHistory}</code></pre>
+
+				<p>Change it, pause it, remove it:</p>
+				<pre><code>{pauseSchedule}</code></pre>
+
+				<p class="muted">
+					A failing run is retried up to <code>max_attempts</code> (max 3) with 2s and 6s backoff.
+					You are alerted on the transition into failure and again on recovery — not once per failed
+					run. Requests carry <code>X-NanoRelay-Run-Id</code>, and delivery is at-least-once, so make
+					the endpoint idempotent.
+				</p>
+
+				<h2 id="together">Both together</h2>
+				<p>
+					Relay calling your endpoint and Pulse watching the result is the belt-and-braces setup: if
+					Relay itself stops calling, the missing ping still reaches you.
+				</p>
+				<pre><code>{both}</code></pre>
+
+				<h2 id="keys">Keys and quota</h2>
+				<p>The API key is the whole account — there is no login, so key management is an API too:</p>
+				<pre><code>{keys}</code></pre>
+				<p class="muted">
+					Revoking the key you are currently using is refused, so nobody can lock themselves out.
+					Create the new one first, then revoke the old one with it.
+				</p>
+
+				<p>Monitors and schedules share one quota. Check where you stand:</p>
+				<pre><code>{usage}</code></pre>
+				<p class="muted">
+					Hitting the limit refuses <em>new</em> monitors and schedules with
+					<code>quota_exceeded</code>. Pings and runs for things that already exist are never
+					refused for quota reasons.
+				</p>
+			</div>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	.page {
+		max-width: 46em;
+		padding: 2em 0 0;
+	}
+	.lede {
+		color: var(--muted);
+		font-size: 1.05rem;
+	}
+	.toc {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5em 1.2em;
+		margin: 2em 0 1em;
+		padding: 1em 1.2em;
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		background: var(--surface);
+		font-size: 0.92rem;
+	}
+	h2 {
+		margin-top: 2.4em;
+		font-size: 1.5rem;
+		scroll-margin-top: 4em;
+	}
+	.page p {
+		color: var(--muted);
+	}
+	pre {
+		margin: 1em 0 1.6em;
+	}
+	.notice {
+		display: flex;
+		align-items: baseline;
+		gap: 0.8em;
+		padding: 0.9em 1.1em;
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		background: var(--surface);
+		font-size: 0.93rem;
+	}
+</style>
