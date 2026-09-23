@@ -88,10 +88,11 @@ curl -X POST "$RELAY/v1/schedules" "\${auth[@]}" -d '{
 #       even if Relay itself stops calling.
 curl -X POST "$PULSE/v1/ping/hourly-sync?interval=3600&grace=600" "\${auth[@]}"`;
 
-const lockAcquire = `TOKEN=$(curl -sf -X POST "$LOCK/v1/locks/nightly-import?ttl=60&owner=$HOSTNAME" \\
-  "\${auth[@]}" | jq -r .token) || { echo "someone else has it"; exit 0; }
+const lockAcquire = `RESPONSE=$(curl -sf -X POST "$LOCK/v1/locks/nightly-import?ttl=60&owner=$HOSTNAME" \\
+  "\${auth[@]}") || { echo "someone else has it"; exit 0; }
 
-trap 'curl -sf -X DELETE "$LOCK/v1/locks/nightly-import?token=$TOKEN" "\${auth[@]}"' EXIT
+TOKEN=$(jq -r .token <<< "$RESPONSE")
+trap 'curl -sf -X DELETE "$LOCK/v1/locks/nightly-import?token=$TOKEN" "\${auth[@]}" > /dev/null' EXIT
 
 ./import.sh`;
 
@@ -233,8 +234,11 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 				<h2 id="lock">Lock: make sure it only runs once</h2>
 				<p>
 					Acquiring returns 201 with a token, or 409 if somebody else holds it. Because
-					<code>curl -sf</code> fails on 409, the second instance just exits — and the
-					<code>trap</code> releases the lock however the script ends, crash included.
+					<code>curl -sf</code> exits non-zero on 409, the second instance just stops — and the
+					<code>trap</code> releases the lock however the script ends, crash included. Capture the
+					response before parsing it: if you pipe curl into <code>jq</code>, the <code>||</code>
+					checks jq's exit status rather than curl's, and a refused lock silently becomes an empty
+					token and a job that runs anyway.
 				</p>
 				<pre><code>{lockAcquire}</code></pre>
 

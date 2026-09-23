@@ -5,11 +5,14 @@ import Footer from "../components/Footer.astro";
 import LockDemo from "../components/LockDemo.astro";
 import { CONTACT_EMAIL, LOCK_BASE, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
 
-const usage = `TOKEN=$(curl -sf -X POST "${LOCK_BASE}/v1/locks/nightly-import?ttl=60&owner=$HOSTNAME" \\
-  -H "Authorization: Bearer $NANO_API_KEY" | jq -r .token) || exit 0   # someone else has it
+const usage = `# Capture the response first: piping curl into jq would hide curl's exit
+# status, and a 409 would silently leave TOKEN empty and run the job anyway.
+RESPONSE=$(curl -sf -X POST "${LOCK_BASE}/v1/locks/nightly-import?ttl=60&owner=$HOSTNAME" \\
+  -H "Authorization: Bearer $NANO_API_KEY") || { echo "someone else has it"; exit 0; }
 
+TOKEN=$(jq -r .token <<< "$RESPONSE")
 trap 'curl -sf -X DELETE "${LOCK_BASE}/v1/locks/nightly-import?token=$TOKEN" \\
-  -H "Authorization: Bearer $NANO_API_KEY"' EXIT
+  -H "Authorization: Bearer $NANO_API_KEY" > /dev/null' EXIT
 
 ./import.sh`;
 ---
@@ -50,8 +53,11 @@ trap 'curl -sf -X DELETE "${LOCK_BASE}/v1/locks/nightly-import?token=$TOKEN" \\
 				<h2>The whole thing, in a shell script</h2>
 				<pre><code>{usage}</code></pre>
 				<p class="muted small">
-					<code>curl -sf</code> fails on 409, so the second instance simply exits. The
-					<code>trap</code> releases the lock however the script ends — including when it crashes.
+					<code>curl -sf</code> exits non-zero on 409, so the second instance simply stops. The
+					<code>trap</code> releases the lock however the script ends, crash included. Note the
+					response is captured before <code>jq</code> touches it: in a pipeline the
+					<code>||</code> would test <em>jq's</em> exit status, not curl's, and a refused lock
+					would sail straight through into running the job.
 				</p>
 			</section>
 
