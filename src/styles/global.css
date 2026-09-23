@@ -69,10 +69,12 @@ body {
 }
 
 main {
-	width: var(--maxw);
-	max-width: calc(100% - 2em);
-	margin: auto;
+	width: 100%;
+	max-width: var(--maxw);
+	margin: 0 auto;
 	padding: 3em 1em;
+	/* Without this, a wide child expands the box past the viewport. */
+	min-width: 0;
 }
 
 h1,
@@ -154,6 +156,8 @@ code {
 pre {
 	font-family: var(--mono);
 	font-size: 0.86rem;
+	max-width: 100%;
+	min-width: 0;
 	line-height: 1.6;
 	padding: 1.15em 1.25em;
 	border-radius: var(--radius);
@@ -174,6 +178,12 @@ blockquote {
 }
 
 /* ---------- shared building blocks ---------- */
+
+section > div,
+.card > div,
+.card {
+	min-width: 0;
+}
 
 .card {
 	background: var(--surface);
@@ -255,5 +265,10 @@ blockquote {
 	}
 	main {
 		padding: 1.5em 1em;
+	}
+	/* Long curl lines are readable at this size and scroll less. */
+	pre {
+		font-size: 0.72rem;
+		padding: 1em;
 	}
 }

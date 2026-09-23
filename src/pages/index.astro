@@ -24,17 +24,16 @@ const snippets: Record<string, string> = {
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={`${SITE_TITLE} — small APIs for the jobs nobody is watching`} description={SITE_DESCRIPTION} />
+		<BaseHead title={`${SITE_TITLE} — schedules, locks, config and heartbeats as HTTP endpoints`} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
 		<Header />
 		<main>
 			<section class="hero">
 				<p class="eyebrow">nano-api</p>
-				<h1>Small, sharp APIs for the jobs <span class="dim">nobody is watching.</span></h1>
+				<h1>Schedules, locks, config and heartbeats <span class="dim">— as four HTTP endpoints.</span></h1>
 				<p class="lede">
-					One API key. No dashboard. Each service does one thing you would otherwise build and
-					maintain yourself.
+					One API key, no dashboard, and nothing of yours to keep running — on Cloudflare's edge.
 				</p>
 				<p class="lede">Get a key. That is the whole signup:</p>
 				<pre class="signup"><code>{SIGNUP_CURL}</code></pre>

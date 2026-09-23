@@ -3,7 +3,7 @@
 
 export const SITE_TITLE = "nano-api";
 export const SITE_DESCRIPTION =
-	"Small, sharp APIs that each do one thing: notice when a job stops running, run it for you on schedule, and stop two copies running at once. One API key, no dashboard.";
+	"Four HTTP endpoints for what you would otherwise run a server for: heartbeat monitoring for cron jobs, scheduled calls, distributed locks and versioned config. One API key, no dashboard.";
 
 export const CONTACT_EMAIL = "hello@nano-api.com";
 

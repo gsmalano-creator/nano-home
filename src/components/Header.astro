@@ -57,13 +57,15 @@ import { GITHUB_URL, SITE_TITLE, X_URL } from "../consts";
 		border-bottom: 1px solid var(--border);
 	}
 	nav {
-		width: var(--maxw);
-		max-width: calc(100% - 2em);
-		margin: auto;
+		width: 100%;
+		max-width: var(--maxw);
+		margin: 0 auto;
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 1em;
+		/* Seven links plus two icons cannot fit one row on a phone. */
+		flex-wrap: wrap;
+		gap: 0.2em 1em;
 		padding: 0.5em 1em;
 	}
 	.brand {
@@ -82,7 +84,10 @@ import { GITHUB_URL, SITE_TITLE, X_URL } from "../consts";
 	.links {
 		display: flex;
 		align-items: center;
-		gap: 0.4em;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		gap: 0 0.4em;
+		min-width: 0;
 	}
 	.links :global(a) {
 		padding: 0.5em 0.6em;
@@ -100,10 +105,13 @@ import { GITHUB_URL, SITE_TITLE, X_URL } from "../consts";
 		font-weight: 700;
 		text-decoration: none;
 	}
-	@media (max-width: 560px) {
+	@media (max-width: 620px) {
+		nav {
+			padding: 0.4em 0.9em;
+		}
 		.links :global(a) {
-			padding: 0.5em 0.35em;
-			font-size: 0.88rem;
+			padding: 0.35em 0.3em;
+			font-size: 0.85rem;
 		}
 	}
 </style>
