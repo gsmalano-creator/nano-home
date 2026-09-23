@@ -2,7 +2,11 @@
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import AlertDemo from "../components/AlertDemo.astro";
 import { CONTACT_EMAIL, SERVICES, SITE_DESCRIPTION, SITE_TITLE, WHAT_YOU_GET, X_HANDLE, X_URL } from "../consts";
+
+const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
+  -d '{"alert_webhook_url": "https://hooks.slack.com/services/..."}'`;
 
 const snippets: Record<string, string> = {
 	NanoPulse: `backup.sh && curl -fsS -X POST \\
@@ -57,6 +61,18 @@ const snippets: Record<string, string> = {
 						</a>
 					))
 				}
+			</section>
+
+			<section class="band alerts">
+				<div>
+					<h2>You find out in Slack</h2>
+					<p>
+						One webhook, no app to install. Alerts fire on state changes only — once when
+						something breaks, once when it recovers. Never one per failed run.
+					</p>
+					<pre><code>{alertCurl}</code></pre>
+				</div>
+				<AlertDemo />
 			</section>
 
 			<section class="band">
@@ -168,6 +184,20 @@ const snippets: Record<string, string> = {
 
 	.band {
 		padding: 3em 0 0;
+	}
+	.alerts {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 2em;
+		align-items: center;
+	}
+	.alerts pre {
+		font-size: 0.72rem;
+	}
+	@media (max-width: 860px) {
+		.alerts {
+			grid-template-columns: 1fr;
+		}
 	}
 	.band > p {
 		max-width: 46em;

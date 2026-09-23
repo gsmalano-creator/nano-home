@@ -23,7 +23,7 @@ export const DEFAULT_QUOTA = 5;
 export const WHAT_YOU_GET = [
 	"One API key for every service",
 	"Unlimited pings and unlimited scheduled runs",
-	"Slack and webhook alerts, on state changes only",
+	"Slack alerts on state changes — one when it breaks, one when it recovers",
 	"Detection within 60 seconds of a missed deadline",
 	"Ping payloads up to 2 KB, and full run history, through the API",
 	"Multiple API keys per account, with self-service rotation and revocation",

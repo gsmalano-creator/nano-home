@@ -2,6 +2,7 @@
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import AlertDemo from "../components/AlertDemo.astro";
 import PulseDemo from "../components/PulseDemo.astro";
 import { CONTACT_EMAIL, PULSE_BASE, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
 
@@ -96,6 +97,22 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 				</ol>
 			</section>
 
+			<section class="band alerts">
+				<div>
+					<h2>What the alert looks like</h2>
+					<p>
+						Any HTTPS webhook works; a Slack incoming webhook needs no configuration, because the
+						body is Slack-shaped. The text says which failure it is: silence, or the job reporting
+						its own failure.
+					</p>
+					<p class="muted small">
+						<code>notified: true</code> on the event means the receiver answered 2xx — so you can
+						tell "nobody was told" from "nobody read it".
+					</p>
+				</div>
+				<AlertDemo />
+			</section>
+
 			<section class="band">
 				<h2>Pairs with the others</h2>
 				<p>
@@ -143,6 +160,17 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 	.band > p {
 		max-width: 46em;
 		color: var(--muted);
+	}
+	.alerts {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 2em;
+		align-items: center;
+	}
+	@media (max-width: 860px) {
+		.alerts {
+			grid-template-columns: 1fr;
+		}
 	}
 	.small {
 		font-size: 0.85rem;

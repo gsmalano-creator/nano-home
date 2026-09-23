@@ -1,0 +1,152 @@
+---
+// The alerts as they actually arrive. Strings match what the services send.
+const messages = [
+	{
+		icon: "🔴",
+		time: "02:06",
+		text: "Monitor <b>nightly-backup</b> has not pinged for 99s (expected every 30s + 30s grace).",
+		tone: "bad",
+	},
+	{
+		icon: "🔴",
+		time: "02:07",
+		text: "Schedule <b>nightly-report</b> failed: endpoint returned HTTP 500 (3 attempts).",
+		tone: "bad",
+	},
+	{
+		icon: "🟢",
+		time: "02:14",
+		text: "Monitor <b>nightly-backup</b> is reporting again.",
+		tone: "ok",
+	},
+];
+---
+
+<figure class="chat">
+	<figcaption class="who">
+		<span class="avatar" aria-hidden="true">
+			<svg viewBox="0 0 28 16" width="20" height="12">
+				<path
+					d="M0 8 H6 l2.5 -6 l2.5 12 l2.5 -6 H28"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"></path>
+			</svg>
+		</span>
+		<span class="name">alerts</span>
+		<span class="tag">app</span>
+	</figcaption>
+
+	<ol>
+		{
+			messages.map((message, index) => (
+				<li class:list={["msg", message.tone]} style={`--i: ${index}`}>
+					<span class="icon" aria-hidden="true">{message.icon}</span>
+					<span class="body" set:html={message.text} />
+					<span class="time">{message.time}</span>
+				</li>
+			))
+		}
+	</ol>
+</figure>
+
+<style>
+	.chat {
+		--loop: 12s;
+		margin: 0;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		padding: 1em 1.1em 1.2em;
+		box-shadow: var(--box-shadow);
+	}
+	.who {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+		margin-bottom: 0.8em;
+	}
+	.avatar {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 26px;
+		height: 26px;
+		border-radius: 6px;
+		background: var(--alive-dim);
+		color: var(--alive);
+	}
+	.name {
+		font-weight: 700;
+		font-size: 0.85rem;
+	}
+	.who .tag {
+		font-size: 0.6rem;
+		padding: 0.1em 0.45em;
+	}
+
+	ol {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 0.55em;
+	}
+	.msg {
+		display: grid;
+		grid-template-columns: 1.4em 1fr auto;
+		gap: 0.6em;
+		align-items: baseline;
+		padding: 0.55em 0.7em;
+		border-radius: 8px;
+		border: 1px solid var(--border);
+		font-size: 0.86rem;
+		opacity: 0;
+		animation: arrive var(--loop) infinite;
+		animation-delay: calc(var(--i) * 1.6s);
+	}
+	.msg.bad {
+		border-color: var(--alert-dim);
+		background: rgba(69, 20, 31, 0.45);
+	}
+	.msg.ok {
+		border-color: var(--alive-dim);
+		background: rgba(20, 61, 48, 0.45);
+	}
+	.body :global(b) {
+		font-family: var(--mono);
+		font-weight: 400;
+	}
+	.time {
+		color: var(--muted);
+		font-size: 0.7rem;
+		font-family: var(--mono);
+	}
+
+	@keyframes arrive {
+		0% {
+			opacity: 0;
+			transform: translateY(4px);
+		}
+		5%,
+		90% {
+			opacity: 1;
+			transform: none;
+		}
+		96%,
+		100% {
+			opacity: 0;
+			transform: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.msg {
+			animation: none;
+			opacity: 1;
+			transform: none;
+		}
+	}
+</style>
