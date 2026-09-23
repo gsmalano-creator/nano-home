@@ -75,7 +75,7 @@ export const SERVICES: Service[] = [
 		status: "live",
 		host: "count.nano-api.com",
 		summary:
-			"Counters that never lose an increment, with an SVG badge anyone can embed in a README.",
+			"Count anything, and get a small image showing the number that you can put in a README or a page. Two things counting at the same moment both land.",
 		href: "/count/",
 	},
 	{
@@ -83,7 +83,7 @@ export const SERVICES: Service[] = [
 		status: "live",
 		host: "lock.nano-api.com",
 		summary:
-			"Stops two of them running at once. A lock with a lease, a token only the holder knows, and a fencing counter.",
+			"Makes sure only one instance runs a job at a time. The lock expires by itself if whoever holds it dies.",
 		href: "/lock/",
 	},
 ];

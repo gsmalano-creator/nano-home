@@ -22,7 +22,7 @@ trap 'curl -sf -X DELETE "${LOCK_BASE}/v1/locks/nightly-import?token=$TOKEN" \\
 	<head>
 		<BaseHead
 			title={`NanoLock — ${SITE_TITLE}`}
-			description="A lock over HTTP: a lease with a TTL, a token only the holder knows, and a fencing counter. Stops two copies of a job running at once."
+			description="Makes sure only one instance runs a job at a time. A lock over HTTP that expires by itself, with a token only the holder has."
 		/>
 	</head>
 	<body>
@@ -33,8 +33,9 @@ trap 'curl -sf -X DELETE "${LOCK_BASE}/v1/locks/nightly-import?token=$TOKEN" \\
 					<p class="eyebrow">nano-api / lock</p>
 					<h1>Two instances woke up.<br /><span class="dim">Only one should run the job.</span></h1>
 					<p class="lede">
-						<code>flock</code> over HTTP. One call says whether you got it, and nobody else gets it
-						until you let go or your lease runs out.
+						One call says whether you got the lock. Nobody else gets it until you let go, or until
+						it expires on its own — so a job runs once even when two instances try.
+						<span class="aside">(<code>flock</code>, for things that talk over HTTP.)</span>
 					</p>
 					<p class="cta">
 						<a class="button" href="/howto/#setup">Get a free API key</a>
@@ -144,6 +145,12 @@ trap 'curl -sf -X DELETE "${LOCK_BASE}/v1/locks/nightly-import?token=$TOKEN" \\
 	}
 	.fineprint {
 		font-size: 0.85rem;
+	}
+	.aside {
+		display: block;
+		margin-top: 0.4em;
+		font-size: 0.88rem;
+		opacity: 0.75;
 	}
 	.band {
 		padding: 3em 0 0;
