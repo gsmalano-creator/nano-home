@@ -39,7 +39,7 @@ const rows = [
 	.demo {
 		--loop: 12s;
 		margin: 0;
-		background: linear-gradient(180deg, var(--surface) 0%, #0d131b 100%);
+		background: linear-gradient(180deg, var(--surface) 0%, var(--deep) 100%);
 		border: 1px solid var(--border);
 		border-radius: var(--radius);
 		padding: 1.1em 1.2em 1.3em;
@@ -61,7 +61,7 @@ const rows = [
 		font-size: 0.78rem;
 	}
 	.head .target {
-		color: var(--alive);
+		color: var(--alive-ink);
 	}
 
 	.log {
@@ -77,7 +77,7 @@ const rows = [
 		align-items: center;
 		gap: 0.4em;
 		padding: 0.32em 0;
-		border-bottom: 1px solid rgba(34, 48, 65, 0.6);
+		border-bottom: 1px solid var(--hairline);
 		opacity: 0;
 		/* The log fills in over the first ~2.5s, then holds: a visitor landing
 		   mid-loop should see a full log, not an empty box. */
@@ -88,7 +88,8 @@ const rows = [
 		color: var(--muted);
 	}
 	.arrow {
-		color: var(--border);
+		color: var(--muted);
+		opacity: 0.5;
 	}
 	.status {
 		font-weight: 700;
@@ -97,10 +98,10 @@ const rows = [
 		color: var(--muted);
 	}
 	.ok .status {
-		color: var(--alive);
+		color: var(--alive-ink);
 	}
 	.warn .status {
-		color: #fbbf5c;
+		color: var(--warn);
 	}
 	.bad .status {
 		color: var(--alert);

@@ -1,28 +1,47 @@
 /*
-  nano-api design tokens. Dark by default: this is infrastructure, and the
-  product's own vocabulary is a green line that goes red. Typography is Atkinson
-  (bundled, high legibility) for prose and the system monospace stack for
-  anything a developer would paste into a terminal.
+  nano-api design tokens. Two themes, one set of names: every rule below and in
+  the components reads a variable, so switching theme is a swap of this block
+  and nothing else. Dark is the default because the product's own vocabulary is
+  a green line that goes red, and that reads best on a dark surface; light is
+  there because a lot of people work in daylight.
+
+  Typography is Atkinson (bundled, high legibility) for prose and the system
+  monospace stack for anything a developer would paste into a terminal.
  */
 
 :root {
 	--bg: #0b0f14;
 	--surface: #111822;
 	--surface-2: #161f2b;
+	--deep: #0d131b;
 	--border: #223041;
+	--hairline: rgba(34, 48, 65, 0.6);
+	--hairline-strong: rgba(34, 48, 65, 0.8);
 	--text: #e7eef6;
 	--muted: #9bacc0;
 
 	--alive: #35d399;
+	/* Green as *text*. On a dark surface one green does both jobs; on a light one
+	   it cannot — a green pale enough to carry dark button text is too pale to
+	   read against white. So --alive paints, --alive-ink writes. */
+	--alive-ink: #35d399;
 	--alive-dim: #143d30;
+	--alive-soft: rgba(20, 61, 48, 0.45);
 	--alert: #fb7185;
 	--alert-dim: #45141f;
+	--alert-soft: rgba(69, 20, 31, 0.45);
+	--warn: #fbbf5c;
 	--link: #7cc9f0;
+
+	/* Text that sits on the green button. Dark in both themes: --alive is a mid
+	   green either way, and white on it does not reach 4.5:1. */
+	--on-alive: #05211a;
+	--header-bg: rgba(11, 15, 20, 0.82);
 
 	--radius: 12px;
 	--maxw: 960px;
 
-	/* Kept for the blog template's components, mapped onto the dark palette. */
+	/* Kept for the blog template's components, mapped onto the palette. */
 	--accent: var(--link);
 	--accent-dark: #4aa8d8;
 	--black: 231, 238, 246;
@@ -33,6 +52,48 @@
 	--box-shadow: 0 1px 2px rgba(0, 0, 0, 40%), 0 12px 32px rgba(0, 0, 0, 45%);
 
 	--mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/*
+  Light. The greens and reds are darker than their dark-theme counterparts:
+  #35d399 is legible on near-black and invisible on near-white, so the hue is
+  kept and the lightness is not. Every value here clears 4.5:1 against the
+  surface it lands on.
+
+  data-theme is set by an inline script in BaseHead before first paint, from
+  the stored choice or the OS preference — so there is no flash, and no-script
+  visitors get the dark default above.
+ */
+:root[data-theme="light"] {
+	--bg: #ffffff;
+	--surface: #f7f9fc;
+	--surface-2: #eef2f7;
+	--deep: #f4f7fa;
+	--border: #dde4ed;
+	--hairline: rgba(221, 228, 237, 0.9);
+	--hairline-strong: rgba(198, 209, 222, 0.9);
+	--text: #0e1620;
+	--muted: #56677a;
+
+	--alive: #10a06f;
+	--alive-ink: #08744f;
+	--alive-dim: #d4f1e4;
+	--alive-soft: rgba(212, 241, 228, 0.7);
+	--alert: #c92a43;
+	--alert-dim: #fbdde2;
+	--alert-soft: rgba(251, 221, 226, 0.7);
+	--warn: #8a5b00;
+	--link: #0a6fb5;
+
+	--header-bg: rgba(255, 255, 255, 0.85);
+
+	--accent-dark: #075c96;
+	--black: 14, 22, 32;
+	--gray: 86, 103, 122;
+	--gray-light: 221, 228, 237;
+	--gray-dark: 14, 22, 32;
+	--gray-gradient: rgba(247, 249, 252, 60%), var(--bg);
+	--box-shadow: 0 1px 2px rgba(15, 23, 42, 8%), 0 12px 32px rgba(15, 23, 42, 8%);
 }
 
 @font-face {
@@ -162,7 +223,7 @@ pre {
 	padding: 1.15em 1.25em;
 	border-radius: var(--radius);
 	border: 1px solid var(--border);
-	background: #0d131b;
+	background: var(--deep);
 	overflow-x: auto;
 }
 pre > code {
@@ -198,7 +259,7 @@ section > div,
 	border-radius: 999px;
 	border: 1px solid var(--alive);
 	background: var(--alive);
-	color: #05211a;
+	color: var(--on-alive);
 	font-weight: 700;
 	text-decoration: none;
 	transition: transform 0.12s ease, filter 0.12s ease;
@@ -206,7 +267,7 @@ section > div,
 .button:hover {
 	filter: brightness(1.08);
 	transform: translateY(-1px);
-	color: #05211a;
+	color: var(--on-alive);
 }
 .button.secondary {
 	background: transparent;
@@ -232,7 +293,7 @@ section > div,
 	color: var(--muted);
 }
 .tag.live {
-	color: var(--alive);
+	color: var(--alive-ink);
 	border-color: var(--alive-dim);
 	background: var(--alive-dim);
 }

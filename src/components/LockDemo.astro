@@ -38,7 +38,7 @@ const lanes = [
 	.demo {
 		--loop: 12s;
 		margin: 0;
-		background: linear-gradient(180deg, var(--surface) 0%, #0d131b 100%);
+		background: linear-gradient(180deg, var(--surface) 0%, var(--deep) 100%);
 		border: 1px solid var(--border);
 		border-radius: var(--radius);
 		padding: 1.1em 1.2em 1.2em;
@@ -59,7 +59,7 @@ const lanes = [
 		font-size: 0.78rem;
 	}
 	.head .ttl {
-		color: var(--alive);
+		color: var(--alive-ink);
 	}
 
 	.lanes {
@@ -96,10 +96,10 @@ const lanes = [
 		opacity: 0;
 	}
 	.pill.holds {
-		color: var(--alive);
+		color: var(--alive-ink);
 	}
 	.pill.wait {
-		color: #fbbf5c;
+		color: var(--warn);
 	}
 	.pill.done {
 		color: var(--muted);
@@ -115,7 +115,7 @@ const lanes = [
 		grid-area: track;
 		height: 3px;
 		border-radius: 3px;
-		background: rgba(34, 48, 65, 0.8);
+		background: var(--hairline-strong);
 		overflow: hidden;
 	}
 	.fill {

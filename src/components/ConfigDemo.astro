@@ -39,7 +39,7 @@ const log = [
 	.demo {
 		--loop: 12s;
 		margin: 0;
-		background: linear-gradient(180deg, var(--surface) 0%, #0d131b 100%);
+		background: linear-gradient(180deg, var(--surface) 0%, var(--deep) 100%);
 		border: 1px solid var(--border);
 		border-radius: var(--radius);
 		padding: 1.1em 1.2em 1.2em;
@@ -69,12 +69,12 @@ const log = [
 	.v {
 		position: absolute;
 		right: 0;
-		color: var(--alive);
+		color: var(--alive-ink);
 	}
 	.doc {
 		margin: 0 0 1em;
 		font-size: 0.78rem;
-		background: #0b1119;
+		background: var(--deep);
 	}
 	.flag {
 		position: relative;
@@ -109,7 +109,7 @@ const log = [
 		grid-template-columns: 5.5em 3.6em 2.6em 1fr;
 		gap: 0.4em;
 		padding: 0.3em 0;
-		border-top: 1px solid rgba(34, 48, 65, 0.6);
+		border-top: 1px solid var(--hairline);
 		opacity: 0;
 		animation: appear var(--loop) infinite;
 		animation-delay: calc(var(--i) * 0.6s);
@@ -125,10 +125,10 @@ const log = [
 		color: var(--muted);
 	}
 	.warn .r {
-		color: #fbbf5c;
+		color: var(--warn);
 	}
 	.ok .r {
-		color: var(--alive);
+		color: var(--alive-ink);
 	}
 
 	@keyframes appear {

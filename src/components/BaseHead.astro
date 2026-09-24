@@ -19,6 +19,34 @@ const { title, description, image = '/og.png' } = Astro.props;
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <meta name="generator" content={Astro.generator} />
+<meta name="theme-color" content="#0b0f14" />
+
+<!--
+  Resolve the theme before anything paints, so a light-theme visitor never sees
+  a dark flash. Inline and synchronous on purpose: a deferred script would run
+  after the first frame. Without script the document keeps the dark default.
+-->
+<script is:inline>
+	(function () {
+		var root = document.documentElement;
+		root.classList.add("has-js");
+		var theme = "dark";
+		try {
+			var stored = localStorage.getItem("theme");
+			theme =
+				stored === "light" || stored === "dark"
+					? stored
+					: matchMedia("(prefers-color-scheme: light)").matches
+						? "light"
+						: "dark";
+		} catch (e) {
+			/* Private mode can throw on localStorage; the default stands. */
+		}
+		root.dataset.theme = theme;
+		var meta = document.querySelector('meta[name="theme-color"]');
+		if (meta) meta.setAttribute("content", theme === "light" ? "#ffffff" : "#0b0f14");
+	})();
+</script>
 
 <!-- Font preloads -->
 <link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin />

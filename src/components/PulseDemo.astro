@@ -36,7 +36,7 @@ beats += " H360";
 	.demo {
 		--loop: 12s;
 		margin: 0;
-		background: linear-gradient(180deg, var(--surface) 0%, #0d131b 100%);
+		background: linear-gradient(180deg, var(--surface) 0%, var(--deep) 100%);
 		border: 1px solid var(--border);
 		border-radius: var(--radius);
 		padding: 1.1em 1.2em 1.3em;
@@ -100,11 +100,11 @@ beats += " H360";
 		animation: var(--loop) infinite;
 	}
 	.s1 {
-		color: var(--alive);
+		color: var(--alive-ink);
 		animation-name: showOk;
 	}
 	.s2 {
-		color: #fbbf5c;
+		color: var(--warn);
 		animation-name: showLate;
 	}
 	.s3 {

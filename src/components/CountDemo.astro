@@ -33,7 +33,7 @@ const steps = [
 	.demo {
 		--loop: 9s;
 		margin: 0;
-		background: linear-gradient(180deg, var(--surface) 0%, #0d131b 100%);
+		background: linear-gradient(180deg, var(--surface) 0%, var(--deep) 100%);
 		border: 1px solid var(--border);
 		border-radius: var(--radius);
 		padding: 1.4em 1.2em 1.2em;
@@ -48,6 +48,8 @@ const steps = [
 		overflow: hidden;
 		margin-bottom: 1.3em;
 	}
+	/* The badge keeps its own colours in both themes: the real SVG is served to
+	   READMEs and renders the same wherever it lands, so the mock should too. */
 	.label {
 		background: #1b2430;
 		color: #c8d4e0;
@@ -55,7 +57,7 @@ const steps = [
 	}
 	.value {
 		position: relative;
-		background: var(--alive);
+		background: #35d399;
 		color: #08131a;
 		font-weight: 700;
 		padding: 0.35em 0.7em;
@@ -86,7 +88,7 @@ const steps = [
 		justify-content: space-between;
 		gap: 1em;
 		padding-bottom: 0.3em;
-		border-bottom: 1px solid rgba(34, 48, 65, 0.6);
+		border-bottom: 1px solid var(--hairline);
 		opacity: 0;
 		animation: appear var(--loop) infinite;
 		animation-delay: calc(var(--i) * 2s);
@@ -98,7 +100,7 @@ const steps = [
 		white-space: nowrap;
 	}
 	.r {
-		color: var(--alive);
+		color: var(--alive-ink);
 	}
 	.note {
 		margin: 1.2em 0 0;
