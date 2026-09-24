@@ -9,8 +9,12 @@ The live services, all in the `nano-api` repo:
 - **NanoRelay** (`relay.nano-api.com`) calls your endpoint on a schedule and tells you when that
   fails.
 - **NanoLock** (`lock.nano-api.com`) stops two copies of a job running at once.
+- **NanoConfig** (`configmaps.nano-api.com`) holds a small JSON document you can change without a
+  deploy.
+- **NanoCount** (`count.nano-api.com`) counts things and renders an SVG badge.
 
-Everything is free while the service is young, so there is no plan catalogue — see `/pricing/`.
+Everything is free, so there is no pricing page — `/about/` says why, and lists the technical
+limits. `/pricing` redirects there, because the URL has been linked.
 
 ## Pages
 
@@ -23,15 +27,18 @@ Everything is free while the service is young, so there is no plan catalogue —
 | `/config/` | NanoConfig: a document changing under a poll log, ETag/If-Match/rollback |
 | `/count/` | NanoCount: a badge ticking up, the atomic-increment and no-key-badge arguments |
 | `/howto/` | Every service end to end in copy-paste curl |
-| `/pricing/` | Free for now: what that includes, why, and what happens when it changes |
-| `/about/` | Who runs it, how it is built, and what not to expect |
+| `/about/` | Why it exists, why it is free, the limits, and what not to expect |
 
 ## Editing content
 
-Everything commercial lives in `src/consts.ts`: the default quota, the feature list, the service
-list (name, host, `live`/`planned` status, page link) and the contact channels. Flipping a service
-to `live` there updates the cards and removes the "planned" notice on the how-to page. The pricing page and the front page both read from it, so the two can never
-disagree. Change a price in one place.
+Shared copy lives in `src/consts.ts`: the default quota, the service list (name, emoji, host,
+`live`/`planned` status, summary, page link) and the contact channels. Flipping a service to
+`live` there updates the cards and removes the "planned" notice on the how-to page. Every page
+reads the same list, so the five can never disagree between pages.
+
+The voice is first person and matter-of-fact: these are tools the author kept rewriting, offered
+as-is and free. No urgency, no "we", no feature-selling — if a page starts sounding like a
+brochure, it has drifted.
 
 `DEFAULT_QUOTA` mirrors `users.monitor_limit` in the API, which covers monitors and schedules
 together. Raising a customer's limit is one admin API call and needs no change here.

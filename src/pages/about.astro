@@ -2,7 +2,7 @@
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import { CONTACT_EMAIL, GITHUB_URL, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
+import { CONTACT_EMAIL, DEFAULT_QUOTA, GITHUB_URL, SIGNUP_CURL, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
 ---
 
 <!doctype html>
@@ -10,7 +10,7 @@ import { CONTACT_EMAIL, GITHUB_URL, SITE_TITLE, X_HANDLE, X_URL } from "../const
 	<head>
 		<BaseHead
 			title={`About — ${SITE_TITLE}`}
-			description="Who runs nano-api, how it is built, and what that means for you as a customer."
+			description="What nano-api is, who wrote it, why it is free, and the limits that exist anyway."
 		/>
 	</head>
 	<body>
@@ -18,43 +18,106 @@ import { CONTACT_EMAIL, GITHUB_URL, SITE_TITLE, X_HANDLE, X_URL } from "../const
 		<main>
 			<div class="page">
 				<p class="eyebrow">About</p>
-				<h1>One person, small tools, no roadmap theatre.</h1>
+				<h1>Five small things, and no plan to sell you anything.</h1>
 
 				<p>
-					nano-api is a family of single-purpose APIs. Each one lives on its own subdomain, takes
-					one API key, and does a job you would otherwise run a server for.
+					Every project I have worked on needed some of the same small pieces. Something to notice
+					when a nightly job stops running. Something to call a URL on a schedule, in the right
+					timezone. A lock, so two instances do not both do the work. One value I can change
+					without a deploy. A counter. None of them is hard. All of them are fiddly, and I have
+					written each one more than once, in a hurry, slightly wrong.
+				</p>
+				<p>
+					So I wrote them once more, carefully, and put them behind an HTTP endpoint on
+					infrastructure that does not need me awake. They are here. Take a key and use them.
+				</p>
+				<pre class="signup"><code>{SIGNUP_CURL}</code></pre>
+
+				<h2>Why it is free</h2>
+				<p>
+					Because charging would be a promise. Taking money means promising a response time and an
+					uptime I cannot honestly promise alongside a day job — and I would rather hand you
+					something useful with clear limits than something priced with vague ones. The
+					infrastructure costs a few dollars a month whether anyone uses it or not.
+				</p>
+				<p>
+					If that ever changes you will get an email well before anything costs money, nothing
+					will be switched off without you agreeing first, and nothing you built will break: the
+					API does not change shape because billing does.
 				</p>
 
 				<h2>How it is built</h2>
 				<p>
-					Cloudflare Workers at the edge, D1 for storage, a scheduled trigger for the background
-					work. No servers, no containers, no queue to babysit — which is why the free tier can
-					exist at all.
+					Cloudflare Workers at the edge, D1 for storage, one scheduled trigger every minute for
+					the background work. No servers, no containers, no queue to babysit — which is the only
+					reason a free tier can exist at all.
 				</p>
 				<p>
-					API keys are stored as SHA-256 hashes, never in clear text. Rotate and revoke them
-					yourself, without asking me.
+					API keys are stored as SHA-256 hashes, never in clear text. You rotate and revoke them
+					yourself, without asking me. The whole thing is
+					<a href={GITHUB_URL} rel="noopener" target="_blank">on GitHub</a> if you want to see how
+					any of it works, or lift a piece of it for your own use.
 				</p>
 
-				<h2>What to expect</h2>
+				<h2>Limits that exist anyway</h2>
+				<p>These are technical, not commercial — they stop one account taking the service down for everyone.</p>
 				<ul>
-					<li>Answers from the person who wrote the code, usually the same day.</li>
-					<li>Honest limits: if something is not built, the page says so.</li>
-					<li>No dark patterns, and no "contact sales" wall in front of the numbers.</li>
-					<li>Delete a monitor and it is gone, history included.</li>
+					<li>
+						{DEFAULT_QUOTA} monitors, schedules, configs or counters by default. Ask and it goes
+						up; that is a one-line change and it costs nothing.
+					</li>
+					<li>
+						The quota applies to <em>creating</em> things. Pings and scheduled runs for things
+						that already exist are never refused for quota reasons.
+					</li>
+					<li>Ping payloads 2 KB; scheduled request bodies 8 KB.</li>
+					<li>Scheduled calls: 60s timeout, 3 attempts, public HTTPS targets only.</li>
+					<li>100 distinct lock names, lease up to an hour.</li>
+					<li>Three signups per address per hour, which keeps the front door honest.</li>
 				</ul>
 
-				<h2>What not to expect</h2>
-				<p>
-					An enterprise SLA, phone support, or nine nines. Where a missed alert has serious
-					consequences, run two providers — I would tell a friend the same thing.
-				</p>
+				<h2>Things worth knowing before you rely on it</h2>
 
-				<h2>Get in touch</h2>
+				<div class="qa">
+					<h3>How fast will I know something broke?</h3>
+					<p>
+						A sweep runs every minute, so an alert lands within about a minute of the deadline. If
+						you need second-level precision, that is a different product and I would say so.
+					</p>
+
+					<h3>Where do alerts go?</h3>
+					<p>
+						Any HTTPS webhook. The body is Slack-shaped (<code>text</code> at the top level), so a
+						Slack webhook needs no configuration at all. Email and SMS are not built.
+					</p>
+
+					<h3>Is there a dashboard?</h3>
+					<p>
+						No, and not by accident. There is an API and
+						<a href="/howto/">a page that walks through all of it in curl</a>. A dashboard would be
+						the next thing I build badly.
+					</p>
+
+					<h3>What if the service itself goes down?</h3>
+					<p>
+						Then you are not monitored, and there is no SLA to point at. I will not promise one I
+						cannot keep. Where a missed alert would genuinely hurt, run two providers — I would
+						tell a friend the same thing.
+					</p>
+
+					<h3>Do you look at my data?</h3>
+					<p>
+						No. Delete a monitor and it is gone, history included. There is no analytics script on
+						this site either.
+					</p>
+				</div>
+
+				<h2>Who</h2>
 				<p>
+					One person, in Norway, evenings and weekends. If something is broken, missing, or just
+					wrong-headed, you reach the person who wrote the code, because there is only the one:
 					<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or
-					<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X. Code on
-					<a href={GITHUB_URL} rel="noopener" target="_blank">GitHub</a>.
+					<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X.
 				</p>
 			</div>
 		</main>
@@ -64,21 +127,30 @@ import { CONTACT_EMAIL, GITHUB_URL, SITE_TITLE, X_HANDLE, X_URL } from "../const
 
 <style>
 	.page {
-		max-width: 44em;
+		max-width: 46em;
 		padding: 2em 0 0;
 	}
 	.page h2 {
-		margin-top: 2em;
-		font-size: 1.4rem;
+		margin-top: 2.2em;
+		font-size: 1.45rem;
 	}
 	.page p,
 	.page li {
 		color: var(--muted);
+	}
+	.signup {
+		font-size: 0.78rem;
+		margin: 1.4em 0 0;
 	}
 	.page ul {
 		padding-left: 1.2em;
 	}
 	.page li {
 		margin-bottom: 0.5em;
+	}
+	.qa h3 {
+		margin-top: 1.8em;
+		font-size: 1.1rem;
+		color: var(--text);
 	}
 </style>

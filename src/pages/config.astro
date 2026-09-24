@@ -23,7 +23,7 @@ const read = `curl -s ${CONFIG_BASE}/v1/configs/checkout/keys/maintenance \\
 	<head>
 		<BaseHead
 			title={`NanoConfig — ${SITE_TITLE}`}
-			description="Small JSON documents you can change without a deploy. Versioned, conditionally writable, and cheap to poll."
+			description="A small JSON document you can change from anywhere, without a deploy. Versioned, safe for two writers, cheap to poll. Free."
 		/>
 	</head>
 	<body>
@@ -34,15 +34,16 @@ const read = `curl -s ${CONFIG_BASE}/v1/configs/checkout/keys/maintenance \\
 					<p class="eyebrow">nano-api / config</p>
 					<h1>Flip the switch<br /><span class="dim">without a deploy.</span></h1>
 					<p class="lede">
-						Small JSON documents, read hot and written rarely. Kill switches, feature flags,
-						limits — the things you should not have to redeploy for.
+						A small JSON document, read often and written rarely. Kill switches, feature flags,
+						limits — the handful of values you should never have to redeploy to change.
 					</p>
 					<p class="cta">
-						<a class="button" href="/howto/#setup">Get a free API key</a>
+						<a class="button" href="/howto/#setup">Take a key</a>
 						<a class="button secondary" href="/howto/#config">Curl walkthrough</a>
 					</p>
 					<p class="fineprint muted">
-						Free, and signup is one unauthenticated <code>curl</code> — no form, no card, no wait.
+						Free. Signup is one <code>curl</code> and the key is in the reply — no form, no card,
+						nobody to ask.
 					</p>
 				</div>
 				<ConfigDemo />
@@ -106,7 +107,7 @@ const read = `curl -s ${CONFIG_BASE}/v1/configs/checkout/keys/maintenance \\
 				</p>
 				<p class="cta">
 					<a class="button" href="/howto/">How to, in curl</a>
-					<a class="button secondary" href="/pricing/">What it costs</a>
+					<a class="button secondary" href="/about/">What this is</a>
 				</p>
 			</section>
 		</main>

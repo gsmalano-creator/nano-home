@@ -1,9 +1,9 @@
-// Single source of truth for site copy, services and pricing. The pricing page
-// and the front page read from here so they can never drift apart.
+// Single source of truth for site copy and the service list. Every page reads
+// from here, so the five can never drift apart between pages.
 
 export const SITE_TITLE = "nano-api";
 export const SITE_DESCRIPTION =
-	"Five small services for the unglamorous bits every project needs: heartbeat monitoring for cron jobs, scheduled calls, locks, config and counters. One API key, no dashboard, nothing to run.";
+	"Five small things I kept writing from scratch on every project — a heartbeat for cron jobs, scheduled calls, a lock, a config document, a counter. They are here now as HTTP endpoints. One key, free, help yourself.";
 
 export const CONTACT_EMAIL = "hello@nano-api.com";
 
@@ -22,20 +22,8 @@ export const LOCK_BASE = "https://lock.nano-api.com";
 export const CONFIG_BASE = "https://configmaps.nano-api.com";
 export const COUNT_BASE = "https://count.nano-api.com";
 
-/**
- * Everything is free while the service is young, so there is no plan catalogue
- * — just a default quota you can ask to have raised.
- */
+/** How many monitors, schedules, configs or counters a new key can create. */
 export const DEFAULT_QUOTA = 5;
-
-export const WHAT_YOU_GET = [
-	"One API key for every service",
-	"Unlimited pings and unlimited scheduled runs",
-	"Slack alerts on state changes — one when it breaks, one when it recovers",
-	"Detection within 60 seconds of a missed deadline",
-	"Ping payloads up to 2 KB, and full run history, through the API",
-	"Multiple API keys per account, with self-service rotation and revocation",
-];
 
 export type Service = {
 	name: string;
@@ -53,7 +41,7 @@ export const SERVICES: Service[] = [
 		status: "live",
 		host: "pulse.nano-api.com",
 		summary:
-			"Your job pings us when it finishes. If a ping goes missing, you hear about it — usually before anyone else notices.",
+			"Your job pings when it finishes. If a ping stops arriving, you get told — usually before anyone else notices.",
 		href: "/pulse/",
 	},
 	{
@@ -62,7 +50,7 @@ export const SERVICES: Service[] = [
 		status: "live",
 		host: "relay.nano-api.com",
 		summary:
-			"We call your endpoint on a schedule, in your own timezone. It retries a failure, and tells you if it keeps failing.",
+			"Calls your endpoint on a schedule, in your own timezone. Retries a failure, and says so if it keeps failing.",
 		href: "/relay/",
 	},
 	{

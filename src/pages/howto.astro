@@ -143,7 +143,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 	<head>
 		<BaseHead
 			title={`How to — ${SITE_TITLE}`}
-			description="Copy-paste curl walkthroughs for NanoPulse heartbeat monitoring and NanoRelay scheduled calls."
+			description="Copy-paste walkthroughs for all five nano-api services: heartbeats, scheduled calls, locks, config and counters."
 		/>
 	</head>
 	<body>
@@ -151,7 +151,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 		<main>
 			<div class="page">
 				<p class="eyebrow">How to</p>
-				<h1>Every service, end to end, in curl.</h1>
+				<h1>All five, end to end.</h1>
 				<p class="lede">
 					Copy-paste, all of it. The service is nothing but a set of HTTP endpoints, so the
 					examples use <code>curl</code> because it reads well on a page — reach for whatever
@@ -171,7 +171,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 				</nav>
 
 				<h2 id="setup">Setup</h2>
-				<p>Get a key. No form, no verification mail, no waiting:</p>
+				<p>Take a key. No form, no verification mail, nobody to ask:</p>
 				<pre><code>{SIGNUP_CURL}</code></pre>
 				<p class="muted">
 					The key is in the response and nowhere else — only its hash is stored. Three signups per

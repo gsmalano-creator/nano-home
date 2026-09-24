@@ -16,7 +16,7 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 	<head>
 		<BaseHead
 			title={`NanoPulse — ${SITE_TITLE}`}
-			description="NanoPulse tells you when a job you depend on has stopped running. Your job pings on success; silence is the alert."
+			description="A heartbeat for cron jobs. Your job pings on success, and the silence is what gets noticed. Free, one curl to start."
 		/>
 	</head>
 	<body>
@@ -25,17 +25,19 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 			<section class="hero">
 				<div>
 					<p class="eyebrow">nano-api / pulse</p>
-					<h1>Your backup job died at 03:14.<br /><span class="dim">Nobody noticed until Monday.</span></h1>
+					<h1>A cron job that stops<br /><span class="dim">does not tell anyone.</span></h1>
 					<p class="lede">
-						Your job pings us when it succeeds. When the ping stops arriving, we tell you — in
-						Slack, within a minute.
+						So the job pings on success instead, and the silence becomes the alert — in Slack,
+						within a minute. I have built this twice before with a table and a second cron job
+						watching the first one. This is that, minus the second cron job.
 					</p>
 					<p class="cta">
-						<a class="button" href="/howto/#setup">Get a free API key</a>
+						<a class="button" href="/howto/#setup">Take a key</a>
 						<a class="button secondary" href="/howto/#pulse">Curl walkthrough</a>
 					</p>
 					<p class="fineprint muted">
-						Free, and signup is one unauthenticated <code>curl</code> — no form, no card, no wait.
+						Free. Signup is one <code>curl</code> and the key is in the reply — no form, no card,
+						nobody to ask.
 					</p>
 				</div>
 				<PulseDemo />
@@ -46,16 +48,16 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 				<pre><code>{cron}</code></pre>
 				<p class="muted small">
 					The <code>&&</code> is the design: if the job fails, the ping never happens, and silence
-					is what we alert on. First ping creates the monitor;
+					is what gets alerted on. First ping creates the monitor;
 					<code>?interval=86400&amp;grace=3600</code> sets the window.
 				</p>
 			</section>
 
 			<section class="band">
-				<h2>Uptime checks watch the door. We watch the work.</h2>
+				<h2>An uptime check watches the door, not the work</h2>
 				<div class="two">
 					<div class="card">
-						<p class="tag">Uptime monitoring</p>
+						<p class="tag">An uptime check</p>
 						<ul class="plain">
 							<li>Pings your server, sees HTTP 200</li>
 							<li>Silent when the nightly export never ran</li>
@@ -85,12 +87,12 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 					</li>
 					<li>
 						<span class="n">2</span>
-						<h3>We count</h3>
-						<p>A sweep at the edge checks every minute who has gone quiet.</p>
+						<h3>A sweep counts</h3>
+						<p>Every minute, at the edge, it checks who has gone quiet.</p>
 					</li>
 					<li>
 						<span class="n">3</span>
-						<h3>We shout once</h3>
+						<h3>It says so once</h3>
 						<p>On the way down, and again on recovery. Transitions only.</p>
 					</li>
 				</ol>
@@ -120,7 +122,7 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 				</p>
 				<p class="cta">
 					<a class="button" href="/howto/">How to, in curl</a>
-					<a class="button secondary" href="/pricing/">What it costs</a>
+					<a class="button secondary" href="/about/">What this is</a>
 				</p>
 			</section>
 		</main>

@@ -21,7 +21,7 @@ const create = `curl -X POST ${RELAY_BASE}/v1/schedules \\
 	<head>
 		<BaseHead
 			title={`NanoRelay — ${SITE_TITLE}`}
-			description="NanoRelay calls your endpoint on a schedule, in your timezone, with retries and alerts when it fails. Cron without a server."
+			description="Cron without a machine to keep alive. Calls your endpoint on a schedule in your own timezone, retries, and says so when it keeps failing. Free."
 		/>
 	</head>
 	<body>
@@ -32,15 +32,16 @@ const create = `curl -X POST ${RELAY_BASE}/v1/schedules \\
 					<p class="eyebrow">nano-api / relay</p>
 					<h1>Cron, without<br /><span class="dim">a machine to keep alive.</span></h1>
 					<p class="lede">
-						We call your endpoint on a schedule — in your timezone, with retries and a Slack alert
-						when it starts failing.
+						It calls your endpoint on a schedule — in your timezone, with retries and a Slack
+						alert when it starts failing. The timezone is the part I got tired of getting wrong.
 					</p>
 					<p class="cta">
-						<a class="button" href="/howto/#setup">Get a free API key</a>
+						<a class="button" href="/howto/#setup">Take a key</a>
 						<a class="button secondary" href="/howto/#relay">Curl walkthrough</a>
 					</p>
 					<p class="fineprint muted">
-						Free, and signup is one unauthenticated <code>curl</code> — no form, no card, no wait.
+						Free. Signup is one <code>curl</code> and the key is in the reply — no form, no card,
+						nobody to ask.
 					</p>
 				</div>
 				<RelayDemo />
@@ -118,7 +119,7 @@ const create = `curl -X POST ${RELAY_BASE}/v1/schedules \\
 				</p>
 				<p class="cta">
 					<a class="button" href="/howto/">How to, in curl</a>
-					<a class="button secondary" href="/pricing/">What it costs</a>
+					<a class="button secondary" href="/about/">What this is</a>
 				</p>
 			</section>
 		</main>
