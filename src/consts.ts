@@ -3,7 +3,7 @@
 
 export const SITE_TITLE = "nano-api";
 export const SITE_DESCRIPTION =
-	"Plain HTTP endpoints for what you would otherwise run a server for: heartbeat monitoring for cron jobs, scheduled calls, distributed locks, versioned config and counters. One API key, no dashboard.";
+	"Five small services for the unglamorous bits every project needs: heartbeat monitoring for cron jobs, scheduled calls, locks, config and counters. One API key, no dashboard, nothing to run.";
 
 export const CONTACT_EMAIL = "hello@nano-api.com";
 
@@ -39,6 +39,7 @@ export const WHAT_YOU_GET = [
 
 export type Service = {
 	name: string;
+	emoji: string;
 	status: "live" | "building" | "planned";
 	host: string;
 	summary: string;
@@ -48,42 +49,47 @@ export type Service = {
 export const SERVICES: Service[] = [
 	{
 		name: "NanoPulse",
+		emoji: "💓",
 		status: "live",
 		host: "pulse.nano-api.com",
 		summary:
-			"Find out when a job you depend on has stopped running. It pings us on success; we alert the moment it goes quiet.",
+			"Your job pings us when it finishes. If a ping goes missing, you hear about it — usually before anyone else notices.",
 		href: "/pulse/",
 	},
 	{
 		name: "NanoRelay",
+		emoji: "⏰",
 		status: "live",
 		host: "relay.nano-api.com",
 		summary:
-			"We call your endpoint on a schedule, with timezone-correct timing, retries, and alerts when it fails.",
+			"We call your endpoint on a schedule, in your own timezone. It retries a failure, and tells you if it keeps failing.",
 		href: "/relay/",
 	},
 	{
 		name: "NanoConfig",
+		emoji: "🎛️",
 		status: "live",
 		host: "configmaps.nano-api.com",
 		summary:
-			"Small JSON documents you can change without a deploy. Versioned, conditionally writable, cheap to poll.",
+			"A small JSON document you can change from anywhere. Flip a switch mid-incident without a deploy.",
 		href: "/config/",
 	},
 	{
 		name: "NanoCount",
+		emoji: "🔢",
 		status: "live",
 		host: "count.nano-api.com",
 		summary:
-			"Count anything, and get a small image showing the number that you can put in a README or a page. Two things counting at the same moment both land.",
+			"Count anything, then show the number as a small image. Two things counting at the same moment both land.",
 		href: "/count/",
 	},
 	{
 		name: "NanoLock",
+		emoji: "🔒",
 		status: "live",
 		host: "lock.nano-api.com",
 		summary:
-			"Makes sure only one instance runs a job at a time. The lock expires by itself if whoever holds it dies.",
+			"Only one instance runs the job. The lock lets go by itself if whoever held it disappears.",
 		href: "/lock/",
 	},
 ];

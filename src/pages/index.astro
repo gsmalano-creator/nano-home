@@ -3,24 +3,33 @@ import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import AlertDemo from "../components/AlertDemo.astro";
-import { CONTACT_EMAIL, EXAMPLE_REPO, EXAMPLE_URL, SERVICES, SIGNUP_CURL, SITE_DESCRIPTION, SITE_TITLE, WHAT_YOU_GET, X_HANDLE, X_URL } from "../consts";
+import {
+	CONTACT_EMAIL,
+	EXAMPLE_REPO,
+	EXAMPLE_URL,
+	GITHUB_URL,
+	SERVICES,
+	SIGNUP_CURL,
+	SITE_DESCRIPTION,
+	SITE_TITLE,
+	X_HANDLE,
+	X_URL,
+} from "../consts";
+
+const highlights = [
+	{ emoji: "🤏", title: "Tiny", text: "One endpoint per job. No SDK to install, no dashboard to learn." },
+	{ emoji: "🔑", title: "One key", text: "Every service, one API key, one quota. Signup is a single curl." },
+	{ emoji: "🌍", title: "On the edge", text: "Cloudflare Workers and a serverless database. Nothing for you to run." },
+	{ emoji: "🆓", title: "Free for now", text: "Not a trial with a clock. There is simply no card form yet." },
+];
+
+const cron = `# at the end of the job you already have
+0 3 * * * backup.sh && curl -fsS -X POST \\
+  -H "Authorization: Bearer $NANO_API_KEY" \\
+  https://pulse.nano-api.com/v1/ping/nightly-backup`;
 
 const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
   -d '{"alert_webhook_url": "https://hooks.slack.com/services/..."}'`;
-
-const snippets: Record<string, string> = {
-	NanoPulse: `backup.sh && curl -fsS -X POST \\
-  $PULSE/v1/ping/nightly-backup`,
-	NanoRelay: `curl -X POST $RELAY/v1/schedules -d '{
-  "cron": "0 3 * * *", "timezone": "Europe/Oslo",
-  "url": "https://api.example.com/jobs/report" }'`,
-	NanoLock: `curl -X POST "$LOCK/v1/locks/import?ttl=60"
-# 201 -> you have it   409 -> someone else does`,
-	NanoConfig: `curl -X PATCH $CONFIG/v1/configs/checkout \\
-  -d '{"maintenance": true}'   # no deploy, no restart`,
-	NanoCount: `curl -X POST $COUNT/v1/counters/downloads
-# then paste the badge URL into your README`,
-};
 ---
 
 <!doctype html>
@@ -33,46 +42,65 @@ const snippets: Record<string, string> = {
 		<main>
 			<section class="hero">
 				<p class="eyebrow">nano-api</p>
-				<h1>Small tools, one job each. <span class="dim">Over HTTP.</span></h1>
-				<p class="lede">
-					Schedules, locks, config, counters and heartbeats. One API key, no dashboard, and
-					nothing of yours to keep running — on Cloudflare's edge.
+				<h1>Small tools,<br />one job each.</h1>
+				<p class="tagline">
+					Five little services for the unglamorous bits every project ends up needing: knowing a
+					job ran, running it on time, stopping two copies colliding, holding a config value,
+					counting something. <strong>nano</strong> as in small — that is the whole promise.
 				</p>
-				<p class="lede">Get a key. That is the whole signup:</p>
-				<pre class="signup"><code>{SIGNUP_CURL}</code></pre>
 				<p class="cta">
-					<a class="button" href="/howto/">How to, in curl</a>
-					<a class="button secondary" href={EXAMPLE_URL} rel="noopener" target="_blank">See it in action</a>
+					<a class="button" href="/howto/">Start in curl</a>
+					<a class="button secondary" href={EXAMPLE_URL} rel="noopener" target="_blank">See it running</a>
+					<a class="button secondary" href={GITHUB_URL} rel="noopener" target="_blank">Source</a>
 				</p>
-				<p class="free">
-					<span class="tag live">Free</span>
-					Everything is free while the service is young. <a href="/pricing/">What that means.</a>
-				</p>
+				<pre class="signup"><code>{SIGNUP_CURL}</code></pre>
+				<p class="under muted">That is the signup. The key comes back in the response.</p>
 			</section>
 
-			<section class="services">
+			<section class="highlights">
 				{
-					SERVICES.map((service) => (
-						<a class="card service" href={service.href}>
-							<p class:list={["tag", { live: service.status === "live" }]}>
-								{service.status === "live" ? "Live" : "Planned"}
-							</p>
-							<h2>{service.name}</h2>
-							<code class="host">{service.host}</code>
-							<p class="summary">{service.summary}</p>
-							{snippets[service.name] && <pre><code>{snippets[service.name]}</code></pre>}
-							<span class="more">Read more &rarr;</span>
-						</a>
+					highlights.map((item) => (
+						<div class="highlight">
+							<p class="ico" aria-hidden="true">{item.emoji}</p>
+							<h2>{item.title}</h2>
+							<p>{item.text}</p>
+						</div>
 					))
 				}
 			</section>
 
+			<section class="band">
+				<h2 class="centered">The five</h2>
+				<div class="services">
+					{
+						SERVICES.map((service) => (
+							<a class="card service" href={service.href}>
+								<p class="ico" aria-hidden="true">{service.emoji}</p>
+								<h3>{service.name}</h3>
+								<code class="host">{service.host}</code>
+								<p class="summary">{service.summary}</p>
+								<span class="more">Read more &rarr;</span>
+							</a>
+						))
+					}
+				</div>
+			</section>
+
+			<section class="band">
+				<h2 class="centered">One line at the end of your job</h2>
+				<p class="centered lead">
+					No agent, no sidecar, nothing to keep alive. The <code>&&</code> does the work: if the job
+					fails, the ping never happens, and silence is what we alert on.
+				</p>
+				<pre><code>{cron}</code></pre>
+			</section>
+
 			<section class="band alerts">
 				<div>
-					<h2>You find out in Slack</h2>
+					<h2>Then you hear about it</h2>
 					<p>
-						One webhook, no app to install. Alerts fire on state changes only — once when
-						something breaks, once when it recovers. Never one per failed run.
+						One webhook, no app to install. Alerts fire on changes only — once when something
+						breaks, once when it comes back. Nobody needs the same bad news twice.
 					</p>
 					<pre><code>{alertCurl}</code></pre>
 				</div>
@@ -80,48 +108,32 @@ const snippets: Record<string, string> = {
 			</section>
 
 			<section class="band">
-				<h2>In every plan</h2>
-				<ul class="shared">
-					{WHAT_YOU_GET.map((item) => <li>{item}</li>)}
-				</ul>
-			</section>
-
-			<section class="band">
-				<h2>See it in action</h2>
-				<p>
-					<a href={EXAMPLE_URL} rel="noopener" target="_blank">A stock ticker on someone's own
-					server</a> uses every one of them: Relay calls it, Lock keeps the run to one copy, Config decides
-					which tickers, Count tallies the runs, Pulse notices if it stops. The panel at the bottom of
-					that page shows what each service did in the last cycle — it is the product watching
-					itself.
+				<h2 class="centered">Someone is already using it</h2>
+				<p class="centered lead">
+					<a href={EXAMPLE_URL} rel="noopener" target="_blank">A stock ticker on a small Linode</a>
+					uses all five at once: Relay calls it, Lock keeps the run to one copy, Config decides which
+					tickers, Count tallies the runs, Pulse notices if it stops. The panel at the bottom of that
+					page shows what each service did last cycle — the product watching itself, which is either
+					elegant or a bit smug.
 				</p>
-				<p>
-					<a href={EXAMPLE_REPO} rel="noopener" target="_blank">The source is 545 lines with no
-					dependencies</a>, including the shell pattern for taking a lock and the ping that turns
-					silence into an alert.
+				<p class="centered">
+					<a href={EXAMPLE_REPO} rel="noopener" target="_blank">The source is 545 lines, no dependencies</a>
+					— including the shell pattern for taking a lock and the ping that turns silence into an
+					alert.
 				</p>
 			</section>
 
-			<section class="band">
-				<h2>They cover each other</h2>
+			<section class="closing card">
+				<h2>Grab a key and try it</h2>
 				<p>
-					Relay runs the job. Lock keeps it to one copy. Pulse notices if it stops running at all —
-					including when Relay is the thing that stopped.
+					Written by one person, evenings and weekends, in Norway. Questions reach whoever wrote the
+					code, because that is the same person:
+					<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or
+					<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a>.
 				</p>
-				<p class="cta">
-					<a class="button" href="/pulse/">NanoPulse</a>
-					<a class="button secondary" href="/relay/">NanoRelay</a>
-					<a class="button secondary" href="/lock/">NanoLock</a>
-				</p>
-			</section>
-
-			<section class="band">
-				<h2>Who runs it</h2>
-				<p>
-					One person, alongside a day job — which is the reason for the small surface and the honest
-					limits. <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>,
-					<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X, or
-					<a href="/about/">more about that</a>.
+				<p class="cta centered">
+					<a class="button" href="/howto/">How to, in curl</a>
+					<a class="button secondary" href="/pricing/">What it costs</a>
 				</p>
 			</section>
 		</main>
@@ -130,45 +142,92 @@ const snippets: Record<string, string> = {
 </html>
 
 <style>
+	/* Centred hero, feature row, then the detail — plenty of air between. */
 	.hero {
-		padding: 3em 0 1em;
-		max-width: 38em;
+		text-align: center;
+		max-width: 44rem;
+		margin: 0 auto;
+		padding: 3.5em 0 1em;
 	}
-	.dim {
+	.hero h1 {
+		font-size: clamp(2.4rem, 7vw, 4rem);
+		line-height: 1.05;
+		margin-bottom: 0.7em;
+	}
+	.tagline {
+		font-size: 1.1rem;
 		color: var(--muted);
+		max-width: 36em;
+		margin: 0 auto 1.8em;
 	}
-	.lede {
-		font-size: 1.12rem;
-		color: var(--muted);
-	}
-	.signup {
-		font-size: 0.78rem;
-		margin: 0.4em 0 1.2em;
+	.tagline strong {
+		color: var(--text);
 	}
 	.cta {
 		display: flex;
 		gap: 0.7em;
 		flex-wrap: wrap;
-		margin: 1.5em 0 1.2em;
+		justify-content: center;
+		margin: 0 0 2em;
 	}
-	.free {
-		display: flex;
-		align-items: baseline;
-		gap: 0.7em;
-		flex-wrap: wrap;
-		font-size: 0.9rem;
-		color: var(--muted);
-		padding: 0.8em 1em;
-		border: 1px solid var(--alive-dim);
-		border-radius: var(--radius);
+	.signup {
+		font-size: 0.76rem;
+		text-align: left;
+		margin: 0;
+	}
+	.under {
+		font-size: 0.85rem;
+		margin: 0.7em 0 0;
+	}
+
+	.highlights {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+		gap: 1.2em;
+		margin: 3.5em 0 0;
+	}
+	.highlight {
 		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		padding: 1.3em;
+		min-width: 0;
+	}
+	.highlight h2 {
+		font-size: 1.05rem;
+		margin: 0.4em 0 0.35em;
+	}
+	.highlight p {
+		margin: 0;
+		color: var(--muted);
+		font-size: 0.92rem;
+	}
+	.ico {
+		font-size: 1.5rem;
+		margin: 0;
+		line-height: 1;
+	}
+
+	.band {
+		padding: 4em 0 0;
+	}
+	.centered {
+		text-align: center;
+	}
+	.lead {
+		max-width: 40em;
+		margin: 0.8em auto 0;
+		color: var(--muted);
+	}
+	.band pre {
+		margin-top: 1.6em;
 	}
 
 	.services {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 		gap: 1.2em;
-		margin-top: 2.5em;
+		margin-top: 1.8em;
 	}
 	.service {
 		display: flex;
@@ -181,24 +240,18 @@ const snippets: Record<string, string> = {
 		border-color: var(--alive-dim);
 		transform: translateY(-2px);
 	}
-	.service .tag {
-		align-self: flex-start;
-	}
-	.service h2 {
-		margin: 0.6em 0 0.35em;
-		font-size: 1.5rem;
+	.service h3 {
+		margin: 0.5em 0 0.35em;
+		font-size: 1.25rem;
 	}
 	.host {
 		align-self: flex-start;
+		font-size: 0.78rem;
 	}
 	.summary {
 		color: var(--muted);
-		margin: 0.9em 0 1em;
-		font-size: 0.95rem;
-	}
-	.service pre {
-		font-size: 0.75rem;
-		margin: 0 0 1.1em;
+		margin: 0.9em 0 1.1em;
+		font-size: 0.93rem;
 	}
 	.more {
 		margin-top: auto;
@@ -206,48 +259,32 @@ const snippets: Record<string, string> = {
 		font-size: 0.92rem;
 	}
 
-	.band {
-		padding: 3em 0 0;
-	}
 	.alerts {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: 2em;
+		gap: 2.2em;
 		align-items: center;
 	}
 	.alerts pre {
 		font-size: 0.72rem;
+		margin-top: 1.2em;
 	}
+
+	.closing {
+		margin-top: 4em;
+		text-align: center;
+	}
+	.closing p {
+		color: var(--muted);
+		max-width: 36em;
+		margin: 0.6em auto 0;
+	}
+	.closing .cta {
+		margin: 1.6em 0 0;
+	}
+
 	@media (max-width: 860px) {
 		.alerts {
-			grid-template-columns: 1fr;
-		}
-	}
-	.band > p {
-		max-width: 46em;
-		color: var(--muted);
-	}
-	ul.shared {
-		list-style: none;
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 0.6em 1.5em;
-		margin: 1.2em 0 1.6em;
-		padding: 0;
-	}
-	ul.shared li {
-		position: relative;
-		padding-left: 1.6em;
-		color: var(--muted);
-	}
-	ul.shared li::before {
-		content: "✓";
-		position: absolute;
-		left: 0;
-		color: var(--alive);
-	}
-	@media (max-width: 720px) {
-		ul.shared {
 			grid-template-columns: 1fr;
 		}
 	}
