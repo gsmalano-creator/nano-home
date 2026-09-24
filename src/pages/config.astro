@@ -50,7 +50,7 @@ const read = `curl -s ${CONFIG_BASE}/v1/configs/checkout/keys/maintenance \\
 			</section>
 
 			<section class="band">
-				<h2>Write it once</h2>
+				<h2>Write it, read it</h2>
 				<pre><code>{write}</code></pre>
 				<p class="muted small">
 					<code>PATCH</code> merges keys and <code>null</code> removes one. Read the whole document,
@@ -60,30 +60,33 @@ const read = `curl -s ${CONFIG_BASE}/v1/configs/checkout/keys/maintenance \\
 			</section>
 
 			<section class="band">
-				<h2>Three decisions that matter</h2>
+				<h2>Three ways I got this wrong by hand</h2>
 				<ol class="steps">
 					<li>
 						<span class="n">1</span>
-						<h3>Polling is free</h3>
+						<h3>Polling it hurts, so you poll it rarely</h3>
 						<p>
-							Reads carry an <code>ETag</code>. Send <code>If-None-Match</code> and an unchanged
-							document answers <code>304</code> with no body — check every few seconds if you like.
+							Then the kill switch takes ten minutes to reach anything. Here every read carries an
+							<code>ETag</code>: send <code>If-None-Match</code> and an unchanged document answers
+							<code>304</code> with no body. Check every few seconds and nobody notices.
 						</p>
 					</li>
 					<li>
 						<span class="n">2</span>
-						<h3>Writers cannot clobber</h3>
+						<h3>Two people edit, one edit disappears</h3>
 						<p>
-							<code>If-Match: "7"</code> writes only if nothing moved. The check and the write are
-							one statement; the loser gets <code>412</code> with both version numbers.
+							Mid-incident that is exactly what happens — you and a colleague both fix it. Send
+							<code>If-Match: "7"</code> and the write only lands if nothing moved since. The loser
+							gets <code>412</code> and both version numbers, rather than silence.
 						</p>
 					</li>
 					<li>
 						<span class="n">3</span>
-						<h3>Rollback moves forward</h3>
+						<h3>Rolling back makes v1 mean two things</h3>
 						<p>
-							Restoring v1 writes its content as a new version. The counter never rewinds, so a
-							cached version number can never mean two things.
+							Restore the old content and anything holding "version 1" is now wrong. So restoring
+							writes that content as a <em>new</em> version instead. The number only ever goes up,
+							and one version number never describes two documents.
 						</p>
 					</li>
 				</ol>

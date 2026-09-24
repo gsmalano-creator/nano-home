@@ -34,7 +34,8 @@ limits. `/pricing` redirects there, because the URL has been linked.
 Shared copy lives in `src/consts.ts`: the default quota, the service list (name, emoji, host,
 `live`/`planned` status, summary, page link) and the contact channels. Flipping a service to
 `live` there updates the cards and removes the "planned" notice on the how-to page. Every page
-reads the same list, so the five can never disagree between pages.
+reads the same list, so the services can never disagree between pages. The copy never states how
+many there are — the list grows, and a hardcoded count goes stale in nine places at once.
 
 The voice is first person and matter-of-fact: these are tools the author kept rewriting, offered
 as-is and free. No urgency, no "we", no feature-selling — if a page starts sounding like a

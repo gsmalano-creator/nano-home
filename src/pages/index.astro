@@ -18,8 +18,8 @@ import {
 
 const highlights = [
 	{ emoji: "🤏", title: "Small", text: "One endpoint per job. Nothing to install, nothing to configure, nothing to learn." },
-	{ emoji: "🔑", title: "One key", text: "The same key opens all five. Signup is a single curl and the key is in the reply." },
-	{ emoji: "🌍", title: "Not your server", text: "Cloudflare Workers and a serverless database. Nothing for you to keep alive." },
+	{ emoji: "🔑", title: "One key", text: "The same key opens every one of them. Signup is a single curl and the key is in the reply." },
+	{ emoji: "🌍", title: "Nothing to run", text: "Cloudflare Workers and a serverless database. No server of yours to keep alive." },
 	{ emoji: "🆓", title: "Free", text: "No card, no trial clock. It costs me a few dollars a month either way." },
 ];
 
@@ -35,19 +35,20 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={`${SITE_TITLE} — five small things, free to use`} description={SITE_DESCRIPTION} />
+		<BaseHead title={`${SITE_TITLE} — small things I kept building, free to use`} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
 		<Header />
 		<main>
 			<section class="hero">
 				<p class="eyebrow">nano-api</p>
-				<h1>Five things I kept<br />building from scratch.</h1>
+				<h1>Things I kept<br />building from scratch.</h1>
 				<p class="tagline">
-					Knowing a job ran. Running it on time. Stopping two copies colliding. Holding a value you
-					can change without a deploy. Counting something. I have written all five more times than
-					I can remember, badly and in a hurry, on project after project. So I wrote them once
-					more, properly, and put them behind an HTTP endpoint. <strong>Help yourself.</strong>
+					Knowing a job ran — and getting a message in Slack the moment it stops. Running it on
+					time. Stopping two copies colliding. Holding a value you can change without a deploy.
+					Counting something. I have written these more times than I can remember, badly and in a
+					hurry, on project after project. So I wrote them once more, properly, and put them
+					behind an HTTP endpoint. <strong>Help yourself.</strong>
 				</p>
 				<p class="cta">
 					<a class="button" href="/howto/">Start in curl</a>
@@ -71,7 +72,7 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 			</section>
 
 			<section class="band">
-				<h2 class="centered">The five</h2>
+				<h2 class="centered">What is here now</h2>
 				<p class="centered lead">
 					Each one has its own page with the whole story: what it guarantees, where it does not
 					help, and the curl to try it.
@@ -93,11 +94,11 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 
 			<section class="band example">
 				<p class="eyebrow centered">Take one of them: Pulse</p>
-				<h2 class="centered">What using any of these actually looks like</h2>
+				<h2 class="centered">One line at the end of a job you already have</h2>
 				<p class="centered lead">
-					Pulse is the heartbeat one, and it is the shortest to show. You add a line to a cron job
-					you already have. The <code>&&</code> is the trick: if the job fails, the ping never
-					happens, and the silence is the thing that gets noticed.
+					Pulse is the heartbeat one, and the shortest to show. The <code>&&</code> is the trick: if
+					the job fails the ping never happens, the deadline passes, and the silence is what gets
+					noticed.
 				</p>
 				<pre><code>{cron}</code></pre>
 
@@ -115,17 +116,17 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 				</div>
 
 				<p class="centered outro">
-					The other four work exactly the same way — one endpoint, one key, one job each.
+					The others work exactly the same way — one endpoint, one key, one job each.
 					<a href="/pulse/">The rest of Pulse is on its own page</a>, and
-					<a href="/howto/">the how-to runs through all five end to end</a>.
+					<a href="/howto/">the how-to runs through every one of them end to end</a>.
 				</p>
 			</section>
 
 			<section class="band">
-				<h2 class="centered">One thing running on all five at once</h2>
+				<h2 class="centered">One thing running on all of them at once</h2>
 				<p class="centered lead">
 					<a href={EXAMPLE_URL} rel="noopener" target="_blank">A stock ticker on a small Linode</a>
-					uses the lot: Relay calls it, Lock keeps the run to one copy, Config decides which
+					uses every one of them: Relay calls it, Lock keeps the run to one copy, Config decides which
 					tickers, Count tallies the runs, Pulse notices if it stops. The panel at the bottom of
 					that page shows what each service did last cycle — the product watching itself, which is
 					either elegant or a bit smug.

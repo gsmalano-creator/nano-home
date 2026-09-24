@@ -143,7 +143,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 	<head>
 		<BaseHead
 			title={`How to — ${SITE_TITLE}`}
-			description="Copy-paste walkthroughs for all five nano-api services: heartbeats, scheduled calls, locks, config and counters."
+			description="Copy-paste walkthroughs for every nano-api service: heartbeats, scheduled calls, locks, config and counters."
 		/>
 	</head>
 	<body>
@@ -151,7 +151,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 		<main>
 			<div class="page">
 				<p class="eyebrow">How to</p>
-				<h1>All five, end to end.</h1>
+				<h1>Every service, end to end.</h1>
 				<p class="lede">
 					Copy-paste, all of it. The service is nothing but a set of HTTP endpoints, so the
 					examples use <code>curl</code> because it reads well on a page — reach for whatever
@@ -160,10 +160,10 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 
 				<nav class="toc">
 					<a href="#setup">Setup</a>
-					<a href="#pulse">Pulse: watch a job</a>
+					<a href="#pulse">Pulse: get told when a job stops</a>
 					<a href="#prove">Prove the alert works</a>
-					<a href="#relay">Relay: run a job</a>
-					<a href="#lock">Lock: run it once</a>
+					<a href="#relay">Relay: run the job for you</a>
+					<a href="#lock">Lock: run it only once</a>
 					<a href="#config">Config: change it without a deploy</a>
 					<a href="#count">Count: a number for the README</a>
 					<a href="#together">All of them together</a>
@@ -184,7 +184,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 					only so the URLs read correctly in your own scripts.
 				</p>
 
-				<h2 id="pulse">Pulse: get told when a job stops running</h2>
+				<h2 id="pulse">Pulse: get told when a job stops</h2>
 				<p>
 					The first ping creates the monitor. <code>interval</code> is how often you expect it and
 					<code>grace</code> is how late it may be, in seconds, read only at creation.
@@ -194,7 +194,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 				<p>In real life that line lives at the end of the job:</p>
 				<pre><code>{crontab}</code></pre>
 				<p class="muted">
-					The <code>&amp;&amp;</code> is the design: a failed script never pings, the deadline
+					The <code>&amp;&amp;</code> is the trick: a failed script never pings, the deadline
 					passes, you hear about it. Failure is the default.
 				</p>
 
@@ -216,7 +216,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 				<p>Going on holiday with the job disabled? Pause it so it does not page you:</p>
 				<pre><code>{pauseMonitor}</code></pre>
 
-				<h2 id="prove">Prove the alert actually works</h2>
+				<h2 id="prove">Prove the alert works</h2>
 				<p>
 					Do this once, on setup day — not during a real outage. <code>/v1/checks/run</code> is the
 					same sweep the cron runs, triggered by hand:
@@ -227,7 +227,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 					<code>false</code> means it never arrived.
 				</p>
 
-				<h2 id="relay">Relay: have the job run for you</h2>
+				<h2 id="relay">Relay: run the job for you</h2>
 				{
 					!relayIsLive && (
 						<p class="notice">
@@ -260,7 +260,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 					endpoint idempotent.
 				</p>
 
-				<h2 id="lock">Lock: make sure it only runs once</h2>
+				<h2 id="lock">Lock: run it only once</h2>
 				<p>
 					201 with a token, or 409 if somebody else holds it. <code>curl -sf</code> exits non-zero
 					on 409 so the second instance stops, and <code>trap</code> releases however the script

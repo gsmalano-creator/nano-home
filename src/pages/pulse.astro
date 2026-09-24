@@ -47,7 +47,7 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 				<h2>One line in your crontab</h2>
 				<pre><code>{cron}</code></pre>
 				<p class="muted small">
-					The <code>&&</code> is the design: if the job fails, the ping never happens, and silence
+					The <code>&&</code> is the trick: if the job fails, the ping never happens, and silence
 					is what gets alerted on. First ping creates the monitor;
 					<code>?interval=86400&amp;grace=3600</code> sets the window.
 				</p>
@@ -69,9 +69,9 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 						<p class="tag live">NanoPulse</p>
 						<ul class="plain">
 							<li>Waits for the job itself to report success</li>
-							<li>Alerts on absence — the failure nobody catches</li>
+							<li>Alerts on absence — the part an uptime check cannot see</li>
 							<li>Works anywhere <code>curl</code> works</li>
-							<li>Takes a payload: "12 043 rows exported"</li>
+							<li>Takes a payload: "12,043 rows exported"</li>
 						</ul>
 					</div>
 				</div>
@@ -87,7 +87,7 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 					</li>
 					<li>
 						<span class="n">2</span>
-						<h3>A sweep counts</h3>
+						<h3>A sweep notices</h3>
 						<p>Every minute, at the edge, it checks who has gone quiet.</p>
 					</li>
 					<li>

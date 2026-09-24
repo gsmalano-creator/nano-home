@@ -66,30 +66,33 @@ const read = `curl -s ${COUNT_BASE}/b/pub_….json
 			</section>
 
 			<section class="band">
-				<h2>Three decisions</h2>
+				<h2>Three ways I got this wrong by hand</h2>
 				<ol class="steps">
 					<li>
 						<span class="n">1</span>
-						<h3>Increments are atomic</h3>
+						<h3>Two writers, one lost count</h3>
 						<p>
-							One upsert adds and returns. Two callers cannot read the same number and write it
-							back — the bug every hand-rolled counter has.
+							The obvious version reads the number, adds one, writes it back. Two callers who read
+							the same moment write the same value, and an increment vanishes. Here adding and
+							returning is one statement, so there is no gap to lose it in.
 						</p>
 					</li>
 					<li>
 						<span class="n">2</span>
-						<h3>The badge needs no key</h3>
+						<h3>The API key ends up in the README</h3>
 						<p>
-							GitHub fetches README images anonymously, so each counter carries an unguessable
-							public id that exposes that counter and nothing else.
+							A badge is just an image, and GitHub fetches images anonymously — so the URL cannot
+							carry your key. Each counter gets its own unguessable public id instead. That URL
+							shows one number, cannot change it, and reveals nothing else you own.
 						</p>
 					</li>
 					<li>
 						<span class="n">3</span>
-						<h3>Reads never increment</h3>
+						<h3>The number counts caches, not code</h3>
 						<p>
-							A caching proxy in front of a hit counter either freezes it or inflates it. Count
-							what your code does, not what a cache does.
+							Put a CDN in front of a page-hit counter and it either freezes or inflates. Reading
+							never increments here. You increment from your own code, when the thing you actually
+							care about happened.
 						</p>
 					</li>
 				</ol>

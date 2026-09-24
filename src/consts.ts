@@ -1,9 +1,11 @@
 // Single source of truth for site copy and the service list. Every page reads
-// from here, so the five can never drift apart between pages.
+// from here, so the services can never drift apart between pages. The copy never
+// states how many there are: the list grows, and a hardcoded count goes stale in
+// nine places at once.
 
 export const SITE_TITLE = "nano-api";
 export const SITE_DESCRIPTION =
-	"Five small things I kept writing from scratch on every project — a heartbeat for cron jobs, scheduled calls, a lock, a config document, a counter. They are here now as HTTP endpoints. One key, free, help yourself.";
+	"Small things I kept writing from scratch on every project — a heartbeat that tells you in Slack when a job stops, scheduled calls, a lock, a config document, a counter. They are here now as HTTP endpoints. One key, free, help yourself.";
 
 export const CONTACT_EMAIL = "hello@nano-api.com";
 
@@ -41,7 +43,7 @@ export const SERVICES: Service[] = [
 		status: "live",
 		host: "pulse.nano-api.com",
 		summary:
-			"Your job pings when it finishes. If a ping stops arriving, you get told — usually before anyone else notices.",
+			"Your job pings when it succeeds. If the pings stop arriving, you hear about it — usually before anyone else notices.",
 		href: "/pulse/",
 	},
 	{
