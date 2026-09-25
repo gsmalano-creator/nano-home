@@ -5,7 +5,7 @@
 
 export const SITE_TITLE = "nano-api";
 export const SITE_DESCRIPTION =
-	"Small things I kept writing from scratch on every project — a heartbeat that tells you in Slack when a job stops, scheduled calls, a lock, a config document, a counter. They are here now as HTTP endpoints. One key, free, help yourself.";
+	"A heartbeat monitor for cron jobs, scheduled HTTP calls with real timezone handling, a lease-based lock, a versioned JSON config document, and an atomic counter. HTTP endpoints, one API key, no dashboard. Free.";
 
 export const CONTACT_EMAIL = "hello@nano-api.com";
 
@@ -29,7 +29,6 @@ export const DEFAULT_QUOTA = 5;
 
 export type Service = {
 	name: string;
-	emoji: string;
 	status: "live" | "building" | "planned";
 	host: string;
 	summary: string;
@@ -39,47 +38,42 @@ export type Service = {
 export const SERVICES: Service[] = [
 	{
 		name: "NanoPulse",
-		emoji: "💓",
 		status: "live",
 		host: "pulse.nano-api.com",
 		summary:
-			"Your job pings when it succeeds. If the pings stop arriving, you hear about it — usually before anyone else notices.",
+			"Your job pings on success. Miss the deadline and it posts to your webhook once, then once more when the pings come back.",
 		href: "/pulse/",
 	},
 	{
 		name: "NanoRelay",
-		emoji: "⏰",
 		status: "live",
 		host: "relay.nano-api.com",
 		summary:
-			"Calls your endpoint on a schedule, in your own timezone. Retries a failure, and says so if it keeps failing.",
+			"Cron expressions evaluated in the timezone you name, not UTC. Three attempts with backoff, run history kept.",
 		href: "/relay/",
 	},
 	{
 		name: "NanoConfig",
-		emoji: "🎛️",
 		status: "live",
 		host: "configmaps.nano-api.com",
 		summary:
-			"A small JSON document you can change from anywhere. Flip a switch mid-incident without a deploy.",
+			"A versioned JSON document. ETag on reads, If-Match on writes, last 20 revisions kept with a note.",
 		href: "/config/",
 	},
 	{
 		name: "NanoCount",
-		emoji: "🔢",
 		status: "live",
 		host: "count.nano-api.com",
 		summary:
-			"Count anything, then show the number as a small image. Two things counting at the same moment both land.",
+			"A named counter incremented in one statement, so concurrent writes cannot collide. Readable as JSON or SVG.",
 		href: "/count/",
 	},
 	{
 		name: "NanoLock",
-		emoji: "🔒",
 		status: "live",
 		host: "lock.nano-api.com",
 		summary:
-			"Only one instance runs the job. The lock lets go by itself if whoever held it disappears.",
+			"A lease with a TTL and a monotonic fence counter. Expires on its own if the holder dies mid-job.",
 		href: "/lock/",
 	},
 ];

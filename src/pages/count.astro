@@ -20,7 +20,7 @@ const read = `curl -s ${COUNT_BASE}/b/pub_….json
 	<head>
 		<BaseHead
 			title={`NanoCount — ${SITE_TITLE}`}
-			description="A named counter that cannot lose an increment, with an SVG badge for your README. Free, one curl to start."
+			description="A named counter that cannot lose an increment. Read it as JSON, or as a small SVG badge you can paste anywhere. Free, one curl to start."
 		/>
 	</head>
 	<body>
@@ -29,18 +29,18 @@ const read = `curl -s ${COUNT_BASE}/b/pub_….json
 			<section class="hero">
 				<div>
 					<p class="eyebrow">nano-api / count</p>
-					<h1>One number.<br /><span class="dim">Not worth a database.</span></h1>
+					<h1>One number, and not worth<br /><span class="dim">a table of its own</span></h1>
 					<p class="lede">
-						Count anything — downloads, exports, runs — then embed the badge or read the value.
-						No table to migrate, no analytics script, and never a lost increment.
+						Increments are a single SQL statement, so two callers at the same instant both land.
+						Read it back as JSON, or as an SVG badge that needs no token.
 					</p>
 					<p class="cta">
 						<a class="button" href="/howto/#setup">Take a key</a>
 						<a class="button secondary" href="/howto/#count">Curl walkthrough</a>
 					</p>
 					<p class="fineprint muted">
-						Free. Signup is one <code>curl</code> and the key is in the reply — no form, no card,
-						nobody to ask.
+						Free. Signup is one <code>curl</code> and the key comes back in the response. No form, no
+						card, nobody to ask.
 					</p>
 				</div>
 				<CountDemo />
@@ -56,11 +56,11 @@ const read = `curl -s ${COUNT_BASE}/b/pub_….json
 			</section>
 
 			<section class="band">
-				<h2>Then paste one line</h2>
+				<h2>Reading it back</h2>
 				<pre><code>{badge}</code></pre>
 				<p class="muted small">
 					<code>?label=</code> and <code>?color=</code> override it per request. Or read the raw
-					number from a browser — the JSON endpoint is CORS-open:
+					number from a browser, since the JSON endpoint is CORS-open:
 				</p>
 				<pre><code>{read}</code></pre>
 			</section>
@@ -79,11 +79,12 @@ const read = `curl -s ${COUNT_BASE}/b/pub_….json
 					</li>
 					<li>
 						<span class="n">2</span>
-						<h3>The API key ends up in the README</h3>
+						<h3>The key ends up committed to git</h3>
 						<p>
-							A badge is just an image, and GitHub fetches images anonymously — so the URL cannot
-							carry your key. Each counter gets its own unguessable public id instead. That URL
-							shows one number, cannot change it, and reveals nothing else you own.
+							A badge is an image, and an image URL cannot send a header, so it ends up in a
+							README or a template with the key in it. Each counter gets its own unguessable
+							public id instead: it shows that one number, cannot change it, and says nothing
+							about the rest of your account.
 						</p>
 					</li>
 					<li>
@@ -99,7 +100,7 @@ const read = `curl -s ${COUNT_BASE}/b/pub_….json
 			</section>
 
 			<section class="band">
-				<h2>Pairs with the others</h2>
+				<h2>Using it with the others</h2>
 				<p>
 					Count the rows an export wrote, then ping <a href="/pulse/">Pulse</a> when it finishes.
 					One number for the badge, one alert when the job stops.

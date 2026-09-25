@@ -17,10 +17,10 @@ import {
 } from "../consts";
 
 const highlights = [
-	{ emoji: "🤏", title: "Small", text: "One endpoint per job. Nothing to install, nothing to configure, nothing to learn." },
-	{ emoji: "🔑", title: "One key", text: "The same key opens every one of them. Signup is a single curl and the key is in the reply." },
-	{ emoji: "🌍", title: "Nothing to run", text: "Cloudflare Workers and a serverless database. No server of yours to keep alive." },
-	{ emoji: "🆓", title: "Free", text: "No card, no trial clock. It costs me a few dollars a month either way." },
+	{ title: "No client", text: "HTTP and an Authorization header. No SDK to pin, no agent to run alongside your job." },
+	{ title: "One key", text: "The same key works on every host. POST /v1/signup returns it; there is no console to log into." },
+	{ title: "Nothing of mine to fail", text: "Cloudflare Workers and D1. No VM in the path, so there is no VM of mine to fall over." },
+	{ title: "Free", text: "No card. It costs me about five dollars a month whether anyone uses it or not." },
 ];
 
 const cron = `# at the end of the job you already have
@@ -35,20 +35,19 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={`${SITE_TITLE} — small things I kept building, free to use`} description={SITE_DESCRIPTION} />
+		<BaseHead title={`${SITE_TITLE} — small HTTP services, free to use`} description={SITE_DESCRIPTION} />
 	</head>
 	<body>
 		<Header />
 		<main>
 			<section class="hero">
 				<p class="eyebrow">nano-api</p>
-				<h1>Things I kept<br />building from scratch.</h1>
+				<h1>Things I kept building from scratch</h1>
 				<p class="tagline">
-					Knowing a job ran — and getting a message in Slack the moment it stops. Running it on
-					time. Stopping two copies colliding. Holding a value you can change without a deploy.
-					Counting something. I have written these more times than I can remember, badly and in a
-					hurry, on project after project. So I wrote them once more, properly, and put them
-					behind an HTTP endpoint. <strong>Help yourself.</strong>
+					A heartbeat monitor that posts to Slack when a cron job goes quiet. Scheduled HTTP calls
+					that respect a timezone. A lock with a lease. A JSON document I can change without a
+					deploy. A counter. I have written every one of these at least twice, in a hurry, and got
+					the concurrency wrong at least once. These versions have tests.
 				</p>
 				<p class="cta">
 					<a class="button" href="/howto/">Start in curl</a>
@@ -56,14 +55,13 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 					<a class="button secondary" href={GITHUB_URL} rel="noopener" target="_blank">Source</a>
 				</p>
 				<pre class="signup"><code>{SIGNUP_CURL}</code></pre>
-				<p class="under muted">That is the signup. The key comes back in the response.</p>
+				<p class="under muted">The key is in the response body. That is the whole signup.</p>
 			</section>
 
 			<section class="highlights">
 				{
 					highlights.map((item) => (
 						<div class="highlight">
-							<p class="ico" aria-hidden="true">{item.emoji}</p>
 							<h2>{item.title}</h2>
 							<p>{item.text}</p>
 						</div>
@@ -74,16 +72,14 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 			<section class="band">
 				<h2 class="centered">What is here now</h2>
 				<p class="centered lead">
-					Each one has its own page with the whole story: what it guarantees, where it does not
-					help, and the curl to try it.
+					Each has its own page: the guarantee, the cases where it does not help, and the curl.
 				</p>
 				<div class="services">
 					{
 						SERVICES.map((service) => (
 							<a class="card service" href={service.href}>
-								<p class="ico" aria-hidden="true">{service.emoji}</p>
-								<h3>{service.name}</h3>
 								<code class="host">{service.host}</code>
+								<h3>{service.name}</h3>
 								<p class="summary">{service.summary}</p>
 								<span class="more">Read more &rarr;</span>
 							</a>
@@ -93,22 +89,20 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 			</section>
 
 			<section class="band example">
-				<p class="eyebrow centered">Take one of them: Pulse</p>
+				<p class="eyebrow centered">Pulse, as the short example</p>
 				<h2 class="centered">One line at the end of a job you already have</h2>
 				<p class="centered lead">
-					Pulse is the heartbeat one, and the shortest to show. The <code>&&</code> is the trick: if
-					the job fails the ping never happens, the deadline passes, and the silence is what gets
-					noticed.
+					The <code>&&</code> does the work. A failed script never reaches the ping, the deadline
+					passes, and the sweep notices the silence within a minute.
 				</p>
 				<pre><code>{cron}</code></pre>
 
 				<div class="pair">
 					<div>
-						<h3>Then you hear about it — once</h3>
+						<h3>One message down, one message back up</h3>
 						<p>
-							Point it at a Slack webhook and you are done. It fires on changes only: once when
-							the pings stop, once when they come back. Nobody needs the same bad news every
-							minute.
+							Any HTTPS webhook. The body is Slack-shaped, so a Slack hook needs no mapping. It
+							fires on transitions, not per missed deadline, so three quiet hours is one message.
 						</p>
 						<pre><code>{alertCurl}</code></pre>
 					</div>
@@ -116,34 +110,34 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 				</div>
 
 				<p class="centered outro">
-					The others work exactly the same way — one endpoint, one key, one job each.
-					<a href="/pulse/">The rest of Pulse is on its own page</a>, and
-					<a href="/howto/">the how-to runs through every one of them end to end</a>.
+					The others are the same shape: one host, one key, one job.
+					<a href="/pulse/">Pulse in full</a>, or
+					<a href="/howto/">the how-to, which runs through all of them in curl</a>.
 				</p>
 			</section>
 
 			<section class="band">
-				<h2 class="centered">One thing running on all of them at once</h2>
+				<h2 class="centered">Something using all of them at once</h2>
 				<p class="centered lead">
 					<a href={EXAMPLE_URL} rel="noopener" target="_blank">A stock ticker on a small Linode</a>
-					uses every one of them: Relay calls it, Lock keeps the run to one copy, Config decides which
-					tickers, Count tallies the runs, Pulse notices if it stops. The panel at the bottom of
-					that page shows what each service did last cycle — the product watching itself, which is
-					either elegant or a bit smug.
+					runs on the whole set: Relay calls it every 15 minutes, Lock keeps that to one copy,
+					Config holds the tickers and a kill switch, Count tallies renders and runs, Pulse watches
+					for it going quiet. The panel at the bottom of the page reports what each one did last
+					cycle.
 				</p>
 				<p class="centered">
-					<a href={EXAMPLE_REPO} rel="noopener" target="_blank">The source is 545 lines, no dependencies</a>
-					— including the shell pattern for taking a lock and the ping that turns silence into an
-					alert.
+					<a href={EXAMPLE_REPO} rel="noopener" target="_blank">545 lines, no dependencies</a>
+					The shell pattern for taking a lock without a race is in there, and that is the part
+					worth copying.
 				</p>
 			</section>
 
 			<section class="closing card">
 				<h2>Take a key and use it</h2>
 				<p>
-					Written by one person, evenings and weekends, in Norway. It is free because charging
-					would mean promising a response time I cannot promise while I have a day job. If
-					something is broken or missing, you reach the person who wrote it:
+					One person, evenings and weekends, in Norway. It is free because charging would commit me
+					to a response time I cannot hold down alongside a day job. Bugs and questions reach the
+					person who wrote the code:
 					<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or
 					<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a>.
 				</p>
@@ -166,9 +160,9 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 		padding: 3.5em 0 1em;
 	}
 	.hero h1 {
-		font-size: clamp(2.4rem, 7vw, 4rem);
-		line-height: 1.05;
-		margin-bottom: 0.7em;
+		font-size: clamp(1.8rem, 4vw, 2.5rem);
+		line-height: 1.15;
+		margin-bottom: 0.8em;
 	}
 	.tagline {
 		font-size: 1.1rem;
@@ -210,18 +204,13 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 		min-width: 0;
 	}
 	.highlight h2 {
-		font-size: 1.05rem;
-		margin: 0.4em 0 0.35em;
+		font-size: 1rem;
+		margin: 0 0 0.45em;
 	}
 	.highlight p {
 		margin: 0;
 		color: var(--muted);
 		font-size: 0.92rem;
-	}
-	.ico {
-		font-size: 1.5rem;
-		margin: 0;
-		line-height: 1;
 	}
 
 	.band {
@@ -257,12 +246,12 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 		transform: translateY(-2px);
 	}
 	.service h3 {
-		margin: 0.5em 0 0.35em;
-		font-size: 1.25rem;
+		margin: 0.6em 0 0.35em;
+		font-size: 1.1rem;
 	}
 	.host {
 		align-self: flex-start;
-		font-size: 0.78rem;
+		font-size: 0.75rem;
 	}
 	.summary {
 		color: var(--muted);

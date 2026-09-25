@@ -31,10 +31,10 @@ trap 'curl -sf -X DELETE "${LOCK_BASE}/v1/locks/nightly-import?token=$TOKEN" \\
 			<section class="hero">
 				<div>
 					<p class="eyebrow">nano-api / lock</p>
-					<h1>Two instances woke up.<br /><span class="dim">Only one should run the job.</span></h1>
+					<h1>Two instances woke up<br /><span class="dim">and only one should run</span></h1>
 					<p class="lede">
 						One call says whether you got the lock. Nobody else gets it until you let go, or until
-						it expires on its own — so a job runs once even when two instances try.
+						it expires on its own. A job runs once even when two instances try.
 						<span class="aside">(<code>flock</code>, for things that talk over HTTP.)</span>
 					</p>
 					<p class="cta">
@@ -42,8 +42,8 @@ trap 'curl -sf -X DELETE "${LOCK_BASE}/v1/locks/nightly-import?token=$TOKEN" \\
 						<a class="button secondary" href="/howto/#lock">Curl walkthrough</a>
 					</p>
 					<p class="fineprint muted">
-						Free. Signup is one <code>curl</code> and the key is in the reply — no form, no card,
-						nobody to ask.
+						Free. Signup is one <code>curl</code> and the key comes back in the response. No form, no
+						card, nobody to ask.
 					</p>
 				</div>
 				<LockDemo />
@@ -69,7 +69,7 @@ trap 'curl -sf -X DELETE "${LOCK_BASE}/v1/locks/nightly-import?token=$TOKEN" \\
 							<li>Two pods wake at 03:00, both run the import</li>
 							<li>A slow run overlaps the next one</li>
 							<li>A retry fires while the original is still working</li>
-							<li>You add a flag column, and get the race wrong — I did</li>
+							<li>You add a flag column and get the race wrong (I did)</li>
 						</ul>
 					</div>
 					<div class="card alive-edge">
@@ -85,15 +85,15 @@ trap 'curl -sf -X DELETE "${LOCK_BASE}/v1/locks/nightly-import?token=$TOKEN" \\
 			</section>
 
 			<section class="band">
-				<h2>What the guarantee is — and is not</h2>
+				<h2>Guarantees, and the limits</h2>
 				<p>
 					Acquiring is a single atomic write that only overwrites an expired lease. Two callers in
 					the same millisecond cannot both win; twenty parallel requests produce exactly one, which
 					is a test in the repo rather than a claim on a page.
 				</p>
 				<p>
-					A lease is not consensus. Stall past your TTL — long GC, suspended VM — and someone else
-					legitimately acquires while you still think you hold it.
+					A lease is not consensus. Stall past your TTL (long GC, suspended VM) and someone else
+					legitimately acquires it while you still think you hold it.
 				</p>
 				<p>
 					That is what <strong>fence</strong> is for: a number that only ever increases. Give it to
@@ -107,7 +107,7 @@ trap 'curl -sf -X DELETE "${LOCK_BASE}/v1/locks/nightly-import?token=$TOKEN" \\
 			</section>
 
 			<section class="band">
-				<h2>Pairs with the others</h2>
+				<h2>Using it with the others</h2>
 				<p>
 					Lock the job <a href="/relay/">Relay</a> calls, ping <a href="/pulse/">Pulse</a> when it
 					finishes. Runs, runs once, and you hear about it if it stops.

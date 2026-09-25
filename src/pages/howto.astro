@@ -111,7 +111,7 @@ const configFlip = `curl -X PATCH "$CONFIG/v1/configs/checkout?note=incident-471
 # 412 if someone wrote first, with both version numbers in the body`;
 
 const configRead = `curl -s "$CONFIG/v1/configs/checkout" "\${auth[@]}" -H 'if-none-match: "8"' -o /dev/null -w '%{http_code}\\n'
-# 304 while nothing changes — poll as often as you like
+# 304 while nothing changes, so poll as often as you like
 
 curl -s "$CONFIG/v1/configs/checkout/keys/maintenance" "\${auth[@]}"`;
 
@@ -124,10 +124,10 @@ const countUp = `curl -X POST "$COUNT/v1/counters/downloads?label=downloads" "\$
 curl -X POST "$COUNT/v1/counters/downloads?by=5" "\${auth[@]}"    # 6
 curl -X PUT  "$COUNT/v1/counters/downloads?value=12300" "\${auth[@]}"`;
 
-const countBadge = `![downloads]($COUNT/b/pub_….svg)
+const countBadge = `![downloads]($COUNT/b/pub_….svg)`;
 
-# or read the number from a browser — CORS is open on this one
-curl -s "$COUNT/b/pub_….json"`;
+const countJson = `curl -s "$COUNT/b/pub_….json"
+# {"name":"downloads","value":12300}`;
 
 const keys = `curl -s "$PULSE/v1/keys" "\${auth[@]}" | jq            # prefixes, last used, active
 curl -X POST "$PULSE/v1/keys" "\${auth[@]}" -d '{"name":"CI"}'  # new key, shown once
@@ -154,8 +154,8 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 				<h1>Every service, end to end.</h1>
 				<p class="lede">
 					Copy-paste, all of it. The service is nothing but a set of HTTP endpoints, so the
-					examples use <code>curl</code> because it reads well on a page — reach for whatever
-					client you already like.
+					examples use <code>curl</code> because it reads well on a page. Reach for whatever client
+					you already have.
 				</p>
 
 				<nav class="toc">
@@ -165,7 +165,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 					<a href="#relay">Relay: run the job for you</a>
 					<a href="#lock">Lock: run it only once</a>
 					<a href="#config">Config: change it without a deploy</a>
-					<a href="#count">Count: a number for the README</a>
+					<a href="#count">Count: keep a number, show it anywhere</a>
 					<a href="#together">All of them together</a>
 					<a href="#keys">Keys and quota</a>
 				</nav>
@@ -174,7 +174,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 				<p>Take a key. No form, no verification mail, nobody to ask:</p>
 				<pre><code>{SIGNUP_CURL}</code></pre>
 				<p class="muted">
-					The key is in the response and nowhere else — only its hash is stored. Three signups per
+					The key is in the response and nowhere else, since only its hash is stored. Three signups per
 					address per hour, in case you were wondering where the limit is. Then, in the shell you
 					are about to work in:
 				</p>
@@ -204,7 +204,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 				<p>Send alerts somewhere. Any HTTPS webhook works; Slack needs no configuration:</p>
 				<pre><code>{alerts}</code></pre>
 
-				<p>Look at what happened — status, last ping, and the most recent pings and events:</p>
+				<p>Look at what happened: status, last ping, and the most recent pings and events:</p>
 				<pre><code>{inspect}</code></pre>
 
 				<p>
@@ -218,7 +218,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 
 				<h2 id="prove">Prove the alert works</h2>
 				<p>
-					Do this once, on setup day — not during a real outage. <code>/v1/checks/run</code> is the
+					Do this once, on setup day, not during a real outage. <code>/v1/checks/run</code> is the
 					same sweep the cron runs, triggered by hand:
 				</p>
 				<pre><code>{proveIt}</code></pre>
@@ -233,7 +233,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 						<p class="notice">
 							<span class="tag">Planned</span>
 							Relay is built but not yet serving traffic. The calls below are exactly what it
-							exposes — they will work the day it goes live.
+							exposes, so they will work the day it goes live.
 						</p>
 					)
 				}
@@ -248,7 +248,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 				<pre><code>{runNow}</code></pre>
 				<pre><code>{runNowOutput}</code></pre>
 
-				<p>Every run is kept — outcome, status code, duration, how many attempts it took:</p>
+				<p>Every run is kept: outcome, status code, duration, how many attempts it took:</p>
 				<pre><code>{scheduleHistory}</code></pre>
 
 				<p>Change it, pause it, remove it:</p>
@@ -277,7 +277,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 				<pre><code>{lockStatus}</code></pre>
 				<p class="muted">
 					Only the holder can release or renew; a wrong token gets 409. <code>fence</code> only ever
-					increases — hand it downstream to reject a stalled holder that wakes up late.
+					increases, so hand it downstream to reject a stalled holder that wakes up late.
 				</p>
 
 				<h2 id="config">Config: change it without a deploy</h2>
@@ -293,23 +293,28 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 				<p>Reading is cheap, and a single key is one call:</p>
 				<pre><code>{configRead}</code></pre>
 
-				<p>Every write is kept, with the note you passed — and rollback writes forward:</p>
+				<p>Every write is kept, with the note you passed. Rollback writes forward:</p>
 				<pre><code>{configRollback}</code></pre>
 				<p class="muted">
 					Restoring v7 becomes v9, never v7 again. A client caching by version number can then
 					trust that one number means one thing forever.
 				</p>
 
-				<h2 id="count">Count: a number for the README</h2>
+				<h2 id="count">Count: keep a number, show it anywhere</h2>
 				<p>Counters are created on first use, and increments are atomic:</p>
 				<pre><code>{countUp}</code></pre>
 
-				<p>The badge needs no key, so it works where a README image is fetched anonymously:</p>
+				<p>
+					There are two ways to read it back. The badge needs no key, so it works anywhere you
+					cannot send a header: a README, a status page, a wiki.
+				</p>
 				<pre><code>{countBadge}</code></pre>
+				<p><code>?label=</code> and <code>?color=</code> restyle it per request. Or take the number
+					itself. The JSON endpoint is CORS-open, so a browser can read it directly:</p>
+				<pre><code>{countJson}</code></pre>
 				<p class="muted">
-					Reads never increment — a caching proxy in front of a hit counter would either freeze the
-					number or inflate it. <code>?label=</code> and <code>?color=</code> restyle the badge per
-					request.
+					Reads never increment, either way. A caching proxy in front of a hit counter would
+					otherwise freeze the number or inflate it.
 				</p>
 
 				<h2 id="together">All of them together</h2>

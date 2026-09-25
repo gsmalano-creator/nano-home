@@ -25,19 +25,19 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 			<section class="hero">
 				<div>
 					<p class="eyebrow">nano-api / pulse</p>
-					<h1>A cron job that stops<br /><span class="dim">does not tell anyone.</span></h1>
+					<h1>A cron job that stops<br /><span class="dim">does not tell anyone</span></h1>
 					<p class="lede">
-						So the job pings on success instead, and the silence becomes the alert — in Slack,
-						within a minute. I have built this twice before with a table and a second cron job
-						watching the first one. This is that, minus the second cron job.
+						So the job pings on success, and the missing ping is what gets reported. I built this
+						twice before with a table and a second cron job watching the first one, which is a
+						second cron job that can also stop.
 					</p>
 					<p class="cta">
 						<a class="button" href="/howto/#setup">Take a key</a>
 						<a class="button secondary" href="/howto/#pulse">Curl walkthrough</a>
 					</p>
 					<p class="fineprint muted">
-						Free. Signup is one <code>curl</code> and the key is in the reply — no form, no card,
-						nobody to ask.
+						Free. Signup is one <code>curl</code> and the key comes back in the response. No form, no
+						card, nobody to ask.
 					</p>
 				</div>
 				<PulseDemo />
@@ -54,7 +54,7 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 			</section>
 
 			<section class="band">
-				<h2>An uptime check watches the door, not the work</h2>
+				<h2>Why an uptime check misses this</h2>
 				<div class="two">
 					<div class="card">
 						<p class="tag">An uptime check</p>
@@ -69,7 +69,7 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 						<p class="tag live">NanoPulse</p>
 						<ul class="plain">
 							<li>Waits for the job itself to report success</li>
-							<li>Alerts on absence — the part an uptime check cannot see</li>
+							<li>Alerts on absence, which is the part a prober cannot see</li>
 							<li>Works anywhere <code>curl</code> works</li>
 							<li>Takes a payload: "12,043 rows exported"</li>
 						</ul>
@@ -107,7 +107,7 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 						its own failure.
 					</p>
 					<p class="muted small">
-						<code>notified: true</code> on the event means the receiver answered 2xx — so you can
+						<code>notified: true</code> on the event means the receiver answered 2xx, so you can
 						tell "nobody was told" from "nobody read it".
 					</p>
 				</div>
@@ -115,7 +115,7 @@ const cron = `0 3 * * * /usr/local/bin/backup.sh && \\
 			</section>
 
 			<section class="band">
-				<h2>Pairs with the others</h2>
+				<h2>Using it with the others</h2>
 				<p>
 					<a href="/relay/">Relay</a> runs the job for you; <a href="/lock/">Lock</a> keeps it to one
 					copy. Put a ping at the end and a missing Relay run is an alert too.

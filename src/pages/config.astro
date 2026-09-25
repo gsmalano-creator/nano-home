@@ -32,18 +32,18 @@ const read = `curl -s ${CONFIG_BASE}/v1/configs/checkout/keys/maintenance \\
 			<section class="hero">
 				<div>
 					<p class="eyebrow">nano-api / config</p>
-					<h1>Flip the switch<br /><span class="dim">without a deploy.</span></h1>
+					<h1>Flip the switch<br /><span class="dim">without a deploy</span></h1>
 					<p class="lede">
 						A small JSON document, read often and written rarely. Kill switches, feature flags,
-						limits — the handful of values you should never have to redeploy to change.
+						limits: the handful of values you should not have to redeploy to change.
 					</p>
 					<p class="cta">
 						<a class="button" href="/howto/#setup">Take a key</a>
 						<a class="button secondary" href="/howto/#config">Curl walkthrough</a>
 					</p>
 					<p class="fineprint muted">
-						Free. Signup is one <code>curl</code> and the key is in the reply — no form, no card,
-						nobody to ask.
+						Free. Signup is one <code>curl</code> and the key comes back in the response. No form, no
+						card, nobody to ask.
 					</p>
 				</div>
 				<ConfigDemo />
@@ -75,7 +75,7 @@ const read = `curl -s ${CONFIG_BASE}/v1/configs/checkout/keys/maintenance \\
 						<span class="n">2</span>
 						<h3>Two people edit, one edit disappears</h3>
 						<p>
-							Mid-incident that is exactly what happens — you and a colleague both fix it. Send
+							Mid-incident that is exactly what happens: you and a colleague both fix it. Send
 							<code>If-Match: "7"</code> and the write only lands if nothing moved since. The loser
 							gets <code>412</code> and both version numbers, rather than silence.
 						</p>
@@ -102,11 +102,11 @@ const read = `curl -s ${CONFIG_BASE}/v1/configs/checkout/keys/maintenance \\
 			</section>
 
 			<section class="band">
-				<h2>Pairs with the others</h2>
+				<h2>Using it with the others</h2>
 				<p>
 					Keep the schedule <a href="/relay/">Relay</a> calls, the window
-					<a href="/pulse/">Pulse</a> watches, and the switch that pauses both — in one document,
-					changed from anywhere.
+					<a href="/pulse/">Pulse</a> watches, and the switch that pauses both, in one document you
+					can change from anywhere.
 				</p>
 				<p class="cta">
 					<a class="button" href="/howto/">How to, in curl</a>

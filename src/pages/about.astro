@@ -18,7 +18,7 @@ import { CONTACT_EMAIL, DEFAULT_QUOTA, GITHUB_URL, SIGNUP_CURL, SITE_TITLE, X_HA
 		<main>
 			<div class="page">
 				<p class="eyebrow">About</p>
-				<h1>Small things I kept rebuilding, and no plan to sell you anything.</h1>
+				<h1>What this is, and why it is free</h1>
 
 				<p>
 					Every project I have worked on needed some of the same small pieces. Something to notice
@@ -28,96 +28,99 @@ import { CONTACT_EMAIL, DEFAULT_QUOTA, GITHUB_URL, SIGNUP_CURL, SITE_TITLE, X_HA
 					written each one more than once, in a hurry, slightly wrong.
 				</p>
 				<p>
-					So I wrote them once more, carefully, and put them behind an HTTP endpoint on
-					infrastructure that does not need me awake. They are here. Take a key and use them.
+					So I wrote them again with tests, and put them behind an HTTP endpoint on infrastructure
+					that does not need me awake. Take a key and use them.
 				</p>
 				<pre class="signup"><code>{SIGNUP_CURL}</code></pre>
 
 				<h2>Why it is free</h2>
 				<p>
-					Because charging would be a promise. Taking money means promising a response time and an
-					uptime I cannot honestly promise alongside a day job — and I would rather hand you
-					something useful with clear limits than something priced with vague ones. The
-					infrastructure costs a few dollars a month whether anyone uses it or not.
+					Charging is a promise. It commits me to a response time and an uptime I cannot hold down
+					alongside a day job, and I would rather give you something useful with stated limits than
+					something priced with vague ones. The infrastructure costs about five dollars a month
+					whether anyone uses it or not.
 				</p>
 				<p>
-					If that ever changes you will get an email well before anything costs money, nothing
-					will be switched off without you agreeing first, and nothing you built will break: the
-					API does not change shape because billing does.
+					If that changes: an email well before anything costs money, nothing switched off without
+					you agreeing first, and no change to the shape of the API. Billing is not a reason to
+					break a client.
 				</p>
 
 				<h2>How it is built</h2>
 				<p>
-					Cloudflare Workers at the edge, D1 for storage, one scheduled trigger every minute for
-					the background work. No servers, no containers, no queue to babysit — which is the only
-					reason a free tier can exist at all.
+					One Cloudflare Worker, one D1 database, one cron trigger firing every minute for the
+					sweep. No VM, no container, no queue. That is the reason a free tier is possible at all:
+					there is nothing running when nobody is calling.
 				</p>
 				<p>
-					API keys are stored as SHA-256 hashes, never in clear text. You rotate and revoke them
-					yourself, without asking me. The whole thing is
-					<a href={GITHUB_URL} rel="noopener" target="_blank">on GitHub</a> if you want to see how
-					any of it works, or lift a piece of it for your own use.
+					Keys are stored as SHA-256 hashes, never in clear text, and you rotate and revoke them
+					yourself. Where correctness depends on two callers not colliding, it is a single SQL
+					statement with a <code>WHERE</code> that only one of them can satisfy, verified with
+					twenty parallel requests in a test rather than asserted on a page. The code is
+					<a href={GITHUB_URL} rel="noopener" target="_blank">on GitHub</a>, including the parts I
+					got wrong first.
 				</p>
 
-				<h2>Limits that exist anyway</h2>
-				<p>These are technical, not commercial — they stop one account taking the service down for everyone.</p>
+				<h2>Limits</h2>
+				<p>Technical, not commercial. They stop one account taking the service down for everyone.</p>
 				<ul>
 					<li>
-						{DEFAULT_QUOTA} monitors, schedules, configs or counters by default. Ask and it goes
-						up; that is a one-line change and it costs nothing.
+						{DEFAULT_QUOTA} monitors, schedules, configs or counters to start. Ask and it goes up;
+						it is one integer on your user row and it costs nothing.
 					</li>
 					<li>
-						The quota applies to <em>creating</em> things. Pings and scheduled runs for things
-						that already exist are never refused for quota reasons.
+						The quota gates <em>creating</em> things. Pings and scheduled runs for things that
+						already exist are never refused for quota reasons, because a billing state should not
+						be able to switch off your monitoring quietly.
 					</li>
-					<li>Ping payloads 2 KB; scheduled request bodies 8 KB.</li>
+					<li>Ping payloads 2 KB. Scheduled request bodies 8 KB.</li>
 					<li>Scheduled calls: 60s timeout, 3 attempts, public HTTPS targets only.</li>
 					<li>100 distinct lock names, lease up to an hour.</li>
-					<li>Three signups per address per hour, which keeps the front door honest.</li>
+					<li>Three signups per address per hour.</li>
 				</ul>
 
-				<h2>Things worth knowing before you rely on it</h2>
+				<h2>Before you rely on it</h2>
 
 				<div class="qa">
 					<h3>How fast will I know something broke?</h3>
 					<p>
-						A sweep runs every minute, so an alert lands within about a minute of the deadline. If
-						you need second-level precision, that is a different product and I would say so.
+						The sweep runs every minute, so an alert lands within about a minute of the deadline.
+						In practice I measured 9 seconds past due on a 120-second window. If you need
+						second-level precision, this is the wrong tool and I would say so.
 					</p>
 
 					<h3>Where do alerts go?</h3>
 					<p>
-						Any HTTPS webhook. The body is Slack-shaped (<code>text</code> at the top level), so a
-						Slack webhook needs no configuration at all. Email and SMS are not built.
+						Any HTTPS webhook. The body has <code>text</code> at the top level, which is what a
+						Slack incoming webhook expects, so Slack needs no mapping. Email and SMS are not
+						built.
 					</p>
 
 					<h3>Is there a dashboard?</h3>
 					<p>
-						No, and not by accident. There is an API and
-						<a href="/howto/">a page that walks through all of it in curl</a>. A dashboard would be
-						the next thing I build badly.
+						No. There is an API and <a href="/howto/">a page that walks through it in curl</a>. A
+						dashboard means sessions, CSRF and a login flow, and it would be the next thing I
+						build badly.
 					</p>
 
 					<h3>What if the service itself goes down?</h3>
 					<p>
-						Then you are not monitored, and there is no SLA to point at. I will not promise one I
-						cannot keep. Where a missed alert would genuinely hurt, run two providers — I would
-						tell a friend the same thing.
+						Then you are not monitored, and there is no SLA to point at. Where a missed alert
+						would genuinely hurt, run two providers. I would tell a friend the same thing.
 					</p>
 
 					<h3>Do you look at my data?</h3>
 					<p>
-						No. Delete a monitor and it is gone, history included. There is no analytics script on
-						this site either.
+						No. Delete a monitor and it is gone, including its ping log and events. There is no
+						analytics script on this site.
 					</p>
 				</div>
 
 				<h2>Who</h2>
 				<p>
-					One person, in Norway, evenings and weekends. If something is broken, missing, or just
-					wrong-headed, you reach the person who wrote the code, because there is only the one:
-					<a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or
-					<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a> on X.
+					One person, evenings and weekends, in Norway. Bugs, questions and things I have got
+					wrong go to <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or
+					<a href={X_URL} rel="noopener" target="_blank">{X_HANDLE}</a>.
 				</p>
 			</div>
 		</main>
