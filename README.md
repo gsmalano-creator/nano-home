@@ -29,6 +29,11 @@ limits. `/pricing` redirects there, because the URL has been linked.
 | `/howto/` | Every service end to end in copy-paste curl |
 | `/about/` | Why it exists, why it is free, the limits, and what not to expect |
 
+The read-only dashboard is not a page here: it is served by the API worker at
+`dash.nano-api.com` so its fetches are same-origin. `DASH_URL` in `src/consts.ts` is the
+only reference to it. Linking it from here rather than hosting it here is deliberate — see
+the nano-pulse README.
+
 ## Editing content
 
 Shared copy lives in `src/consts.ts`: the default quota, the service list (name, emoji, host,

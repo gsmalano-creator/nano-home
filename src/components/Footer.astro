@@ -1,5 +1,5 @@
 ---
-import { CONTACT_EMAIL, GITHUB_URL, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
+import { CONTACT_EMAIL, DASH_URL, GITHUB_URL, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
 const today = new Date();
 ---
 
@@ -19,6 +19,7 @@ const today = new Date();
 			· <a href="/count/">Count</a>
 			· <a href="/howto/">How to</a>
 			· <a href="/about/">About</a>
+			· <a href={DASH_URL}>Dashboard</a>
 		</p>
 		<p class="line muted">&copy; {today.getFullYear()} nano-api</p>
 	</div>

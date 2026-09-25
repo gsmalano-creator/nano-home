@@ -2,7 +2,7 @@
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import { CONTACT_EMAIL, DEFAULT_QUOTA, GITHUB_URL, SIGNUP_CURL, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
+import { CONTACT_EMAIL, DASH_URL, DEFAULT_QUOTA, GITHUB_URL, SIGNUP_CURL, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
 ---
 
 <!doctype html>
@@ -54,7 +54,8 @@ import { CONTACT_EMAIL, DEFAULT_QUOTA, GITHUB_URL, SIGNUP_CURL, SITE_TITLE, X_HA
 				</p>
 				<p>
 					Keys are stored as SHA-256 hashes, never in clear text, and you rotate and revoke them
-					yourself. Where correctness depends on two callers not colliding, it is a single SQL
+					yourself. A key is full access or read-only, fixed at creation, and the read ones cannot
+					issue wider ones. Where correctness depends on two callers not colliding, it is a single SQL
 					statement with a <code>WHERE</code> that only one of them can satisfy, verified with
 					twenty parallel requests in a test rather than asserted on a page. The code is
 					<a href={GITHUB_URL} rel="noopener" target="_blank">on GitHub</a>, including the parts I
@@ -98,9 +99,14 @@ import { CONTACT_EMAIL, DEFAULT_QUOTA, GITHUB_URL, SIGNUP_CURL, SITE_TITLE, X_HA
 
 					<h3>Is there a dashboard?</h3>
 					<p>
-						No. There is an API and <a href="/howto/">a page that walks through it in curl</a>. A
-						dashboard means sessions, CSRF and a login flow, and it would be the next thing I
-						build badly.
+						One, read-only, at <a href={DASH_URL}>dash.nano-api.com</a>. It has no login: you paste
+						a key, because the key is already the account. Sessions, CSRF and a password reset flow
+						are three things I would build badly, so there are none.
+					</p>
+					<p>
+						It insists on a key with <code>scope: read</code> and refuses one that can write. That
+						is the point of it. Everything else is still the API and
+						<a href="/howto/">the curl walkthrough</a>.
 					</p>
 
 					<h3>What if the service itself goes down?</h3>

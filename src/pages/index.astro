@@ -5,6 +5,7 @@ import Footer from "../components/Footer.astro";
 import AlertDemo from "../components/AlertDemo.astro";
 import {
 	CONTACT_EMAIL,
+	DASH_URL,
 	EXAMPLE_REPO,
 	EXAMPLE_URL,
 	GITHUB_URL,
@@ -18,7 +19,7 @@ import {
 
 const highlights = [
 	{ title: "No client", text: "HTTP and an Authorization header. No SDK to pin, no agent to run alongside your job." },
-	{ title: "One key", text: "The same key works on every host. POST /v1/signup returns it; there is no console to log into." },
+	{ title: "One key", text: "The same key works on every host. POST /v1/signup returns it. The key is the account, so there is no password anywhere." },
 	{ title: "Nothing of mine to fail", text: "Cloudflare Workers and D1. No VM in the path, so there is no VM of mine to fall over." },
 	{ title: "Free", text: "No card. It costs me about five dollars a month whether anyone uses it or not." },
 ];
@@ -27,6 +28,10 @@ const cron = `# at the end of the job you already have
 0 3 * * * backup.sh && curl -fsS -X POST \\
   -H "Authorization: Bearer $NANO_API_KEY" \\
   https://pulse.nano-api.com/v1/ping/nightly-backup`;
+
+const readKey = `curl -X POST $PULSE/v1/keys \\
+  -H "Authorization: Bearer $NANO_API_KEY" \\
+  -d '{"name":"dashboard","scope":"read"}'`;
 
 const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
   -d '{"alert_webhook_url": "https://hooks.slack.com/services/..."}'`;
@@ -119,6 +124,24 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 			</section>
 
 			<section class="band">
+				<h2 class="centered">A screen, if you want one</h2>
+				<p class="centered lead">
+					Paste a key at <a href={DASH_URL}>dash.nano-api.com</a> and you get every heartbeat,
+					schedule, lock, config and counter on it, refreshing every 30 seconds. There is no login,
+					because the key is already the account.
+				</p>
+				<p class="centered lead">
+					It only reads, and it insists on a key that can only read. Paste one that can write and it
+					refuses without storing it, which is the whole reason scoped keys exist:
+				</p>
+				<pre><code>{readKey}</code></pre>
+				<p class="centered outro">
+					One HTML file. No framework, no analytics, nothing loaded from anywhere else, not even a
+					font. The key lives in <code>sessionStorage</code> and dies with the tab.
+				</p>
+			</section>
+
+			<section class="band">
 				<h2 class="centered">Something using all of them at once</h2>
 				<p class="centered lead">
 					<a href={EXAMPLE_URL} rel="noopener" target="_blank">A stock ticker on a small Linode</a>
@@ -128,9 +151,9 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 					cycle.
 				</p>
 				<p class="centered">
-					<a href={EXAMPLE_REPO} rel="noopener" target="_blank">545 lines, no dependencies</a>
-					The shell pattern for taking a lock without a race is in there, and that is the part
-					worth copying.
+					<a href={EXAMPLE_REPO} rel="noopener" target="_blank">545 lines, no dependencies</a>. The
+					shell pattern for taking a lock without a race is in there, and that is the part worth
+					copying.
 				</p>
 			</section>
 
@@ -281,6 +304,12 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 		gap: 2.2em;
 		align-items: center;
 		margin-top: 3em;
+	}
+	/* A grid item defaults to min-width:auto, so its min-content floor wins over
+	   1fr and the column grows past the viewport. The code block inside already
+	   scrolls; this lets the column shrink far enough for that to matter. */
+	.pair > * {
+		min-width: 0;
 	}
 	.pair h3 {
 		font-size: 1.35rem;

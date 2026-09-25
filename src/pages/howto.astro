@@ -129,10 +129,17 @@ const countBadge = `![downloads]($COUNT/b/pub_….svg)`;
 const countJson = `curl -s "$COUNT/b/pub_….json"
 # {"name":"downloads","value":12300}`;
 
-const keys = `curl -s "$PULSE/v1/keys" "\${auth[@]}" | jq            # prefixes, last used, active
+const keys = `curl -s "$PULSE/v1/keys" "\${auth[@]}" | jq            # prefixes, scopes, last used
 curl -X POST "$PULSE/v1/keys" "\${auth[@]}" -d '{"name":"CI"}'  # new key, shown once
 curl -X DELETE "$PULSE/v1/keys/key_abc123" \\
   -H "Authorization: Bearer $NEW_KEY"                          # revoke the old one`;
+
+const readKey = `curl -X POST "$PULSE/v1/keys" "\${auth[@]}" \\
+  -d '{"name":"dashboard","scope":"read"}'
+
+# that key can now GET, and nothing else
+curl -s   "$PULSE/v1/monitors" -H "Authorization: Bearer $READ_KEY"   # 200
+curl -X POST "$PULSE/v1/ping/x" -H "Authorization: Bearer $READ_KEY"  # 403`;
 
 const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 # { "monitors": 3, "schedules": 2, "used": 5, "limit": 5, "remaining": 0 }`;
@@ -327,6 +334,20 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 				<p class="muted">
 					Revoking the key you are using is refused, so nobody locks themselves out. New one first,
 					then revoke the old with it.
+				</p>
+
+				<h3>Read-only keys</h3>
+				<p>
+					A key is <code>write</code> unless you say otherwise. Pass <code>scope</code> at creation
+					to get one that can look but not touch:
+				</p>
+				<pre><code>{readKey}</code></pre>
+				<p class="muted">
+					The scope is fixed once the key exists. To narrow a key you issue a new one and revoke the
+					old, which is the same move as rotation. Every read here is a <code>GET</code> and every
+					write is not, so that is the whole rule: a read key gets <code>403</code> on anything
+					else, including <code>POST /v1/keys</code>. That last one is the point. A read key cannot
+					mint itself a wider one.
 				</p>
 
 				<p>Monitors and schedules share one quota. Check where you stand:</p>
