@@ -47,14 +47,14 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 		<main>
 			<section class="hero">
 				<p class="eyebrow">nano-api</p>
-				<h1>Things I kept building from scratch, now on nano-api for all to use</h1>
-				<h2>nano-api is built following the eternal unix wisdom for services: 'should do one thing and do it well'.</h2>
+				<h1>Things I kept building from scratch</h1>
+				<p class="thesis">One thing each, done well. The old unix rule, as HTTP endpoints.</p>
 				<p class="tagline">
-					A heartbeat monitor that posts to Slack when a cron job goes quiet. Scheduled HTTP calls
-					that respect a timezone. A lock with a lease. Configuration I can change without a
-					deploy. A counter. I have written every one of these many times, in a hurry, and got
-					the concurrency or timezones wrong at least once and been unknown of failing jobs for long periods.
-					Now I just use this. And you can too.
+					A heartbeat that shouts in Slack when a cron job goes quiet. Scheduled calls that
+					respect a timezone. A lock with a lease. Config I can change without a deploy. A
+					counter. I have written all of these more than once, in a hurry, and got the
+					concurrency or the timezone wrong, or simply never noticed the job had stopped.
+					<strong>Help yourself.</strong>
 				</p>
 				<p class="cta">
 					<a class="button" href="/howto/">Start in curl</a>
@@ -187,12 +187,19 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 	.hero h1 {
 		font-size: clamp(1.8rem, 4vw, 2.5rem);
 		line-height: 1.15;
-		margin-bottom: 0.8em;
+		margin-bottom: 0.5em;
+	}
+	/* The thesis, not a second headline: it carries weight by being the only
+	   full-contrast line under the title, not by being bold as well. */
+	.thesis {
+		font-size: 1.2rem;
+		max-width: 32em;
+		margin: 0 auto 1.1em;
 	}
 	.tagline {
-		font-size: 1.1rem;
+		font-size: 1rem;
 		color: var(--muted);
-		max-width: 36em;
+		max-width: 34em;
 		margin: 0 auto 1.8em;
 	}
 	.tagline strong {

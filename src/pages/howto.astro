@@ -344,7 +344,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 
 				<h2 id="uniq">Uniq: have I seen this before?</h2>
 				<p>
-					You supply the key. It is a delivery id, an event id, an order number — something you
+					You supply the key. It is a delivery id, an event id, an order number: something you
 					already hold. Nothing is generated here; the product is the memory.
 				</p>
 				<pre><code>{uniqClaim}</code></pre>
@@ -356,7 +356,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 				<p>Claim, work, and hand it back if the work failed:</p>
 				<pre><code>{uniqShell}</code></pre>
 				<p class="muted">
-					Keys expire — 24 hours by default, 30 days at most — so set the ttl above your upstream's
+					Keys expire after 24 hours by default and 30 days at most, so set the ttl above your upstream's
 					retry horizon. Without the <code>DELETE</code> on failure, a crash between claiming and
 					finishing means every retry is told it is late and the work never happens.
 				</p>

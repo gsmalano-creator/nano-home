@@ -95,13 +95,13 @@ fi`;
 				<pre><code>{shell}</code></pre>
 				<p class="muted small">
 					Without the <code>DELETE</code>, a crash between claiming and finishing means the work
-					never happens at all — the key is held and every retry is told it is late. That is the
+					never happens at all: the key is held and every retry is told it is late. That is the
 					one sharp edge here, and it is the same trade every idempotency layer makes.
 				</p>
 			</section>
 
 			<section class="band">
-				<h2>What the guarantee is — and is not</h2>
+				<h2>Guarantees, and the limits</h2>
 				<p>
 					<strong>Exactly one caller is told <code>first_time: true</code>.</strong> That is decided
 					by the hit count the write returns, not by comparing timestamps: two arrivals in the same

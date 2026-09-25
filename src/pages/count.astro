@@ -45,7 +45,7 @@ curl -X PUT "${COUNT_BASE}/v1/counters/invoice-2026?value=2" \\
 					<p class="lede">
 						Increments are a single SQL statement, so two callers at the same instant are never
 						handed the same number. Read it back as JSON, or as an SVG badge that needs no token
-						— and because of that same property, it doubles as a sequence allocator.
+						And because of that same property, it doubles as a sequence allocator.
 					</p>
 					<p class="cta">
 						<a class="button" href="/howto/#setup">Take a key</a>
@@ -87,8 +87,8 @@ curl -X PUT "${COUNT_BASE}/v1/counters/invoice-2026?value=2" \\
 					and <code>?by=100</code> reserves a block in one round trip rather than a hundred.
 				</p>
 				<p>
-					One thing has to be forbidden. A tally may be corrected — "the download count is really
-					12300" is reasonable — but invoice 42 twice is an accounting problem. Create it with
+					One thing has to be forbidden. A tally may be corrected ("the download count is really
+					12300" is reasonable), but invoice 42 twice is an accounting problem. Create it with
 					<code>?monotonic=true</code> and the counter keeps everything it already did, minus the
 					ability to move backwards: a negative step or a lower <code>PUT</code> gets a
 					<code>409</code>.
