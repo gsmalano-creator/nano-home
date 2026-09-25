@@ -48,6 +48,59 @@ const { title, description, image = '/og.png' } = Astro.props;
 	})();
 </script>
 
+<!--
+  A copy button on every code block. Done once here rather than per page,
+  because every page includes BaseHead and every example is a plain <pre>.
+-->
+<script>
+	// Without the clipboard API the button could not do its one job, so it is
+	// never rendered. An insecure origin (plain http) is the usual reason.
+	if (navigator.clipboard?.writeText) {
+		const SHEET =
+			'<svg class="sheet" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="5.5" width="8" height="9" rx="1.5"/><path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h1"/></svg>';
+		const TICK =
+			'<svg class="tick" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5 6.5 12 13 4.5"/></svg>';
+
+		for (const pre of document.querySelectorAll("pre")) {
+			if (pre.parentElement?.classList.contains("code-block")) continue;
+
+			const wrapper = document.createElement("div");
+			wrapper.className = "code-block";
+			pre.replaceWith(wrapper);
+			wrapper.appendChild(pre);
+
+			const button = document.createElement("button");
+			button.type = "button";
+			button.className = "code-copy";
+			button.title = "Copy";
+			button.setAttribute("aria-label", "Copy to clipboard");
+			button.innerHTML = SHEET + TICK;
+			wrapper.appendChild(button);
+
+			let reset;
+			button.addEventListener("click", async () => {
+				try {
+					// textContent, not innerText: the latter would collapse the
+					// indentation that makes a multi-line curl runnable.
+					await navigator.clipboard.writeText(pre.textContent ?? "");
+				} catch {
+					button.title = "Could not copy";
+					return;
+				}
+				button.classList.add("copied");
+				button.title = "Copied";
+				button.setAttribute("aria-label", "Copied to clipboard");
+				clearTimeout(reset);
+				reset = setTimeout(() => {
+					button.classList.remove("copied");
+					button.title = "Copy";
+					button.setAttribute("aria-label", "Copy to clipboard");
+				}, 1600);
+			});
+		}
+	}
+</script>
+
 <!-- Font preloads -->
 <link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin />
 <link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin />
