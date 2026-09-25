@@ -24,6 +24,7 @@ import { DASH_URL, GITHUB_URL, SITE_TITLE, X_URL } from "../consts";
 				<HeaderLink href="/lock/">Lock</HeaderLink>
 				<HeaderLink href="/config/">Config</HeaderLink>
 				<HeaderLink href="/count/">Count</HeaderLink>
+				<HeaderLink href="/uniq/">Uniq</HeaderLink>
 				<HeaderLink href="/howto/">How to</HeaderLink>
 				<HeaderLink href="/about/">About</HeaderLink>
 				<a href={DASH_URL}>Dashboard</a>
@@ -175,7 +176,10 @@ import { DASH_URL, GITHUB_URL, SITE_TITLE, X_URL } from "../consts";
 		display: none;
 	}
 
-	/* The burger exists only on narrow screens; see the media query below. */
+	/* The burger exists only on narrow screens; see the media query below.
+	   The breakpoint is measured, not guessed: with nine links the one-row nav
+	   needs 888px, so 980 leaves room for one or two more services before this
+	   has to move again. It has already moved twice. */
 	.burger {
 		display: none;
 	}
@@ -214,7 +218,7 @@ import { DASH_URL, GITHUB_URL, SITE_TITLE, X_URL } from "../consts";
 		transform: translateY(-6px) rotate(-45deg);
 	}
 
-	@media (max-width: 880px) {
+	@media (max-width: 980px) {
 		nav {
 			flex-wrap: nowrap;
 			padding: 0.4em 0.9em;
@@ -287,7 +291,7 @@ import { DASH_URL, GITHUB_URL, SITE_TITLE, X_URL } from "../consts";
 		// Rotating the phone can widen past the breakpoint, where the panel is
 		// laid out inline again; leaving it "open" would then be meaningless.
 		// Must match the media query in the style block above.
-		const NAV_BREAKPOINT = 880;
+		const NAV_BREAKPOINT = 980;
 		addEventListener("resize", () => {
 			if (innerWidth > NAV_BREAKPOINT) setOpen(false);
 		});

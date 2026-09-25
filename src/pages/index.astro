@@ -47,8 +47,8 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 		<main>
 			<section class="hero">
 				<p class="eyebrow">nano-api</p>
-				<h1>Things I kept building from scratch</h1>
-				<h2>now moved to secure, robust and _simple_ online apis</h2>
+				<h1>Things I kept building from scratch, now on nano-api for all to use</h1>
+				<h2>nano-api is built following the eternal unix wisdom for services: 'should do one thing and do it well'.</h2>
 				<p class="tagline">
 					A heartbeat monitor that posts to Slack when a cron job goes quiet. Scheduled HTTP calls
 					that respect a timezone. A lock with a lease. Configuration I can change without a
@@ -146,14 +146,14 @@ const alertCurl = `curl -X PATCH $PULSE/v1/monitors/nightly-backup \\
 				<p class="centered lead">
 					<a href={EXAMPLE_URL} rel="noopener" target="_blank">A stock ticker on a small Linode</a>
 					runs on the whole set: Relay calls it every 15 minutes, Lock keeps that to one copy,
-					Config holds the tickers and a kill switch, Count tallies renders and runs, Pulse watches
-					for it going quiet. The panel at the bottom of the page reports what each one did last
-					cycle.
+					Config holds the tickers and the threshold that decides when it wakes someone, Count
+					tallies renders and failures, Pulse watches for it going quiet. The panel at the bottom
+					of the page reports what each one did last cycle.
 				</p>
 				<p class="centered">
-					<a href={EXAMPLE_REPO} rel="noopener" target="_blank">545 lines, no dependencies</a>. The
-					shell pattern for taking a lock without a race is in there, and that is the part worth
-					copying.
+					<a href={EXAMPLE_REPO} rel="noopener" target="_blank">The source is readable in one
+					sitting, with no dependencies</a>. The shell pattern for taking a lock without a race is
+					in there, and so is the reason it alerts from three places instead of one.
 				</p>
 			</section>
 

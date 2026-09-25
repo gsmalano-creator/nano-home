@@ -11,6 +11,161 @@ list — only put something there once you intend to be asked about it.
 - **NanoLock** — `lock.nano-api.com`. Leased mutual exclusion with a fencing counter. Shipped
   2026-09-23.
 - **NanoConfig** — `configmaps.nano-api.com`. Versioned JSON documents. Shipped 2026-09-23.
+- **NanoCount** — `count.nano-api.com`. Atomic counters with an SVG badge. Shipped 2026-09-24.
+  `?monotonic=true` makes one a sequence allocator; see below.
+- **Read-only API keys** — `scope` on `api_keys`, enforced by one check in `requireApiKey`.
+  Shipped 2026-09-25.
+- **NanoUniq** — `uniq.nano-api.com`. "Have I seen this key before?", inside a window. The
+  caller supplies the key; nothing is generated. Shipped 2026-09-25.
+- **The dashboard** — `dash.nano-api.com`. Read-only, no login, requires a read-scoped key. Served
+  from the API worker so its fetches are same-origin. Shipped 2026-09-25.
+
+## What makes a good nano-api service
+
+**A small unix-style operation that holds state, and that is tedious to reimplement in every
+project.** Three clauses, and all three have to hold.
+
+The rule is not aspirational; it describes what actually got built. Every service here is a unix
+verb that needed somewhere to keep its state:
+
+| Unix | Here |
+| --- | --- |
+| `flock` | NanoLock |
+| `cron`, `at` | NanoRelay |
+| a watchdog / process supervisor | NanoPulse |
+| a dotfile you can edit from elsewhere | NanoConfig |
+| `wc -l >> file`, atomically | NanoCount |
+| `uniq` | NanoUniq |
+
+The verb clause is the useful one, because it is *generative* rather than merely evaluative: walk
+through the toolbox and ask what the stateful HTTP version of each tool would be. "A small piece
+of durable state plus a guarantee" — the earlier phrasing — told you whether a candidate was any
+good, but never where to look for one.
+
+What is tedious is never the logic. It is having to run a database for three rows, or keep a
+machine alive because something must happen every minute. That is the whole reason Relay exists.
+
+### What the rule excludes
+
+**Pure functions.** QR codes, markdown rendering, UUIDs. `npm install` solves them in ten seconds,
+so nobody wants an endpoint.
+
+**Pure lookups.** Email validation, holiday calendars, IP geolocation. These hold no state and are
+not operations; they are datasets with an HTTP face. Useful, but a different business: the work is
+sourcing and maintaining data, not making a guarantee. Three former candidates moved out on this
+basis — see below.
+
+**Anything where the guarantee is the easy part.** If the hard bit is evaluation, targeting or
+workflow, the storage overlap is a mirage. See the LaunchDarkly section.
+
+### Checklist for a candidate
+
+1. Name the unix tool it is. If you cannot, be suspicious.
+2. It holds state that has to survive a restart.
+3. Almost every project needs it, and doing it yourself means running storage, a schedule, or both.
+4. It fits in one endpoint with no SDK.
+5. It is cheap on Workers + D1/KV/DO, at the volume it will actually be called.
+6. It does not make us a liability (no attacker-controlled fetch, no email sending, no auth).
+
+Point 5 is new and it has teeth. Every service so far is called once per job, cycle or deploy:
+low volume, high value per call. A candidate called once per *request to the customer's app* has a
+completely different cost and latency profile, and the shape of the rule will not warn you. See
+rate limiting.
+
+### On the word "enterprise"
+
+"Kjipt å reimplementere i hvert enterprise-prosjekt" is the right demand signal — that is where
+the same work gets redone most often. But it is the wrong *buyer*: enterprise procurement asks for
+SSO, a DPA, an SLA and sometimes on-prem, which is the opposite of what one person can promise for
+free. Use it privately to find candidates; keep it out of the public copy. The user is the
+developer, whatever the company size.
+
+### Precedent: ask whether a flag covers it first
+
+"A sequence allocator" looked like a new service on 2026-09-25. It was not: `POST /v1/counters/:name`
+already returns a distinct number to every concurrent caller, and `?by=100` already allocates a
+block in one round trip. The only gap was that a plain counter may move backwards, which is right
+for a tally and wrong for an invoice number. That became `?monotonic=true` — one column, one
+`WHERE` — instead of a sixth subdomain.
+
+Do this check before every entry below: is this an existing service plus a guarantee?
+
+## Candidates, in the order I would build them
+
+(NanoLock and NanoConfig came off this list on 2026-09-23, NanoCount on 2026-09-24, NanoUniq on
+2026-09-25. All shipped.)
+
+### 1. Form endpoint
+
+Somewhere a static site can POST an HTML form; stored, listable, and optionally forwarded to a
+webhook. Not a unix tool exactly — the closest is a mail drop — but it clears clauses two and
+three by a mile, and it is probably the most universally needed thing that has ever been on this
+list. Every landing page, every "contact us", every waitlist. Formspree and Tally live off it and
+the cheap end is open.
+
+Carries the abuse surface the others do not: it is an unauthenticated public write endpoint, so it
+needs per-origin allowlisting, a size cap, and rate limiting before it can exist at all. Spam is
+the product risk, not the engineering.
+
+### 2. Rate limiting — the shape fits, the economics might not
+
+Token bucket per key. The single most reimplemented stateful operation in enterprise code, always
+written slightly wrong, needs a clock and somewhere to keep counters. The signup limiter in
+`core/signup.ts` is already this, in D1.
+
+And it is the first candidate where the selection rule is satisfied but the operating model is
+not. Everything else here is called once per job. A rate limiter is called once per request to the
+customer's app, which means:
+
+- **Latency is on the critical path.** A D1 round trip from a Worker is fine once a minute and
+  unacceptable in front of every request.
+- **The volume is inverted.** Thousands of writes a minute per customer, each worth almost
+  nothing. That is the exact failure I had to fix in nano-marketwatch's render counter, but as the
+  product rather than a bug in a demo.
+
+Durable Objects are the right primitive — single-threaded, in-memory state, no read-modify-write
+race — and Cloudflare has a native rate-limiting binding that may be a better answer than
+anything hand-built. **Before writing any of it:** measure a DO round trip from a Worker in the
+same colo and decide whether the free tier survives a customer with real traffic. If the answer
+is no, this belongs in "deliberately not", and that would be a useful thing to have established.
+
+### Maybe: webhook fan-out — `tee`
+
+Receive one call, deliver it to several destinations, with retries and per-destination alerting.
+Genuinely useful and a clean verb.
+
+Blocked by the standing rule that we do not multiply attacker-controlled fetch. Relay already
+carries that risk once, with an SSRF guard and a DoH check per run. `tee` would carry it N times
+per request, with the customer choosing N. Only worth revisiting if destinations require domain
+verification first, and that is a different amount of work than the feature.
+
+## A different product: data lookups
+
+Moved off the candidate list on 2026-09-25 because they hold no state and are not operations.
+Recorded rather than deleted: the demand is real, it is just not this product.
+
+- **Email validation** — syntax, MX lookup, disposable-domain list. The DoH code in Relay's URL
+  guard already does the hard network part, and the incumbents charge absurd money. But the work
+  is maintaining a disposable-domain list forever, which is data janitoring, not a guarantee.
+- **Business-day calendar** — is 2 January a banking day in Norway? Static data, updated once a
+  year, needed constantly by payroll and invoicing. Same objection: the product *is* the dataset.
+- **Caller geo** — Cloudflare hands over country, city and ASN free on every request via
+  `request.cf`. Nearly free to serve, and precisely why nobody pays for it.
+
+If any of these ever ships it should be under a different name, because "one API key for a family
+of stateful operations" stops being the pitch.
+
+## Deliberately not
+
+- **Sending email.** Deliverability is a full-time profession: SPF, DKIM, IP warming, blocklists.
+  One spamming customer ruins the reputation for everyone.
+- **Auth, OTP, magic links.** The liability is enormous and the bugs are breaches.
+- **Generic KV or Redis.** Upstash owns it, and it is not "one thing". The same objection kills
+  "an append-only log you can read back": the moment the shape is "put arbitrary data here", there
+  is no guarantee left to sell and no reason to pick us.
+- **URL shortener.** Crowded, and an abuse magnet — you become phishing infrastructure by week two.
+- **Anything else that fetches a customer-controlled URL.** Relay already carries that risk once,
+  with an SSRF guard and a DoH check. Do not multiply it by three.
 
 ## Where NanoConfig sits next to LaunchDarkly
 
@@ -37,52 +192,6 @@ Two things would close the gaps that actually hurt, in this order:
 
 Targeting is deliberately *not* next: it is where the complexity lives, and the app that reads the
 document can do percentage rollout itself with three lines.
-
-## What makes a good nano-api service
-
-The strong ones all have the same shape: **a small piece of durable state plus a guarantee.** A
-counter that never loses an increment. A lock that is actually exclusive. A key that is seen
-exactly once. That is what is tedious to do yourself — not the logic, but having to run a database
-for three rows. The same goes for anything that needs a clock: "something must run every minute"
-is what forces you to keep a machine alive, which is the whole reason Relay exists.
-
-Pure functions are weak products by this measure. QR codes, markdown rendering, UUIDs: `npm
-install` solves them in ten seconds, so nobody pays for an endpoint.
-
-Checklist for a candidate:
-
-1. Almost every project needs it.
-2. Doing it yourself means running storage, a schedule, or both.
-3. It fits in one endpoint with no SDK.
-4. It is cheap on Workers + D1/KV/DO, so the free tier survives.
-5. It does not make us a liability (no attacker-controlled fetch, no email sending, no auth).
-
-## Candidates, in the order I would build them
-
-(NanoLock and NanoConfig came off this list on 2026-09-23. Both shipped.)
-
-- **NanoCount** — increment and read named counters. Download counts, likes, feature usage.
-  Built-in distribution: serve an SVG badge and every README showing the number is an advert.
-- **Form endpoint** — somewhere a static site can POST its HTML form, stored and forwarded. Probably
-  the most universally needed thing on this list: every landing page, every "contact us", every
-  waitlist. Formspree and Tally live off it; the cheap end is open.
-- **Idempotency keys** — "have I seen this before?" `POST /v1/seen/:key` answers atomically with a
-  TTL. Every webhook consumer needs it and builds it with a table and a unique index.
-- **Email validation** — syntax, MX lookup, disposable-domain list. The DoH code already exists in
-  Relay's URL guard, and the incumbents charge absurd money for it.
-- **Business-day calendar** — is 2 January a banking day in Norway? Static data, updated once a
-  year, needed constantly by payroll and invoicing.
-- **Caller geo** — Cloudflare hands us country, city and ASN free on every request via `request.cf`.
-
-## Deliberately not
-
-- **Sending email.** Deliverability is a full-time profession: SPF, DKIM, IP warming, blocklists.
-  One spamming customer ruins the reputation for everyone.
-- **Auth, OTP, magic links.** The liability is enormous and the bugs are breaches.
-- **Generic KV or Redis.** Upstash owns it, and it is not "one thing".
-- **URL shortener.** Crowded, and an abuse magnet — you become phishing infrastructure by week two.
-- **Anything else that fetches a customer-controlled URL.** Relay already carries that risk once,
-  with an SSRF guard and a DoH check. Do not multiply it by three.
 
 ## Shipped: NanoRelay
 

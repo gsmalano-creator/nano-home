@@ -1,0 +1,133 @@
+---
+// The same delivery arriving three times. The first claim wins and the work
+// runs; the rest are told they are late and do nothing. One CSS loop.
+const rows = [
+	{ time: "02:14:07", code: "201", detail: "first_time: true", state: "ok", work: "charge card" },
+	{ time: "02:14:09", code: "200", detail: "hits: 2", state: "dim", work: "skipped" },
+	{ time: "02:19:41", code: "200", detail: "hits: 3", state: "dim", work: "skipped" },
+];
+---
+
+<figure class="demo">
+	<figcaption class="head">
+		<code>POST /v1/uniq/evt_1JK2nX8s</code>
+		<code class="ttl">ttl 24h</code>
+	</figcaption>
+
+	<ol class="log">
+		{
+			rows.map((row, index) => (
+				<li class:list={["row", row.state]} style={`--i: ${index}`}>
+					<span class="time">{row.time}</span>
+					<span class="code">{row.code}</span>
+					<span class="detail">{row.detail}</span>
+					<span class="work">{row.work}</span>
+				</li>
+			))
+		}
+	</ol>
+
+	<p class="note">One delivery, three arrivals, one charge.</p>
+</figure>
+
+<style>
+	.demo {
+		--loop: 12s;
+		margin: 0;
+		background: linear-gradient(180deg, var(--surface) 0%, var(--deep) 100%);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		padding: 1.1em 1.2em 1.2em;
+		box-shadow: var(--box-shadow);
+	}
+	.head {
+		display: flex;
+		justify-content: space-between;
+		gap: 1em;
+		margin-bottom: 0.9em;
+		flex-wrap: wrap;
+	}
+	.head code {
+		background: none;
+		border: none;
+		padding: 0;
+		color: var(--muted);
+		font-size: 0.78rem;
+	}
+	.head .ttl {
+		color: var(--alive-ink);
+	}
+
+	.log {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		font-family: var(--mono);
+		font-size: 0.78rem;
+	}
+	.row {
+		display: grid;
+		grid-template-columns: 5em 2.6em 1fr auto;
+		align-items: center;
+		gap: 0.5em;
+		padding: 0.4em 0;
+		border-bottom: 1px solid var(--hairline);
+		opacity: 0;
+		animation: appear var(--loop) infinite;
+		animation-delay: calc(var(--i) * 0.9s);
+	}
+	.time {
+		color: var(--muted);
+	}
+	.code {
+		font-weight: 700;
+	}
+	.ok .code {
+		color: var(--alive-ink);
+	}
+	.dim .code,
+	.dim .detail,
+	.dim .work {
+		color: var(--muted);
+	}
+	.detail {
+		color: var(--text);
+	}
+	.work {
+		font-size: 0.72rem;
+	}
+	.ok .work {
+		color: var(--alive-ink);
+	}
+
+	.note {
+		margin: 1.1em 0 0;
+		font-size: 0.8rem;
+		color: var(--muted);
+	}
+
+	@keyframes appear {
+		0% {
+			opacity: 0;
+			transform: translateY(-3px);
+		}
+		4%,
+		90% {
+			opacity: 1;
+			transform: none;
+		}
+		96%,
+		100% {
+			opacity: 0;
+			transform: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.row {
+			animation: none;
+			opacity: 1;
+			transform: none;
+		}
+	}
+</style>

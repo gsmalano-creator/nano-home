@@ -13,6 +13,18 @@ const badge = `![downloads](${COUNT_BASE}/b/pub_….svg)`;
 
 const read = `curl -s ${COUNT_BASE}/b/pub_….json
 # {"name":"downloads","value":12300}`;
+
+const sequence = `# create it once with the guarantee
+curl -X POST "${COUNT_BASE}/v1/counters/invoice-2026?monotonic=true" \\
+  -H "Authorization: Bearer $NANO_API_KEY"
+
+# then just allocate. ?by=100 returns 102, so 3..102 are yours
+curl -X POST "${COUNT_BASE}/v1/counters/invoice-2026?by=100" \\
+  -H "Authorization: Bearer $NANO_API_KEY"
+
+# and it will not go back
+curl -X PUT "${COUNT_BASE}/v1/counters/invoice-2026?value=2" \\
+  -H "Authorization: Bearer $NANO_API_KEY"   # 409`;
 ---
 
 <!doctype html>
@@ -31,8 +43,9 @@ const read = `curl -s ${COUNT_BASE}/b/pub_….json
 					<p class="eyebrow">nano-api / count</p>
 					<h1>One number, and not worth<br /><span class="dim">a table of its own</span></h1>
 					<p class="lede">
-						Increments are a single SQL statement, so two callers at the same instant both land.
-						Read it back as JSON, or as an SVG badge that needs no token.
+						Increments are a single SQL statement, so two callers at the same instant are never
+						handed the same number. Read it back as JSON, or as an SVG badge that needs no token
+						— and because of that same property, it doubles as a sequence allocator.
 					</p>
 					<p class="cta">
 						<a class="button" href="/howto/#setup">Take a key</a>
@@ -63,6 +76,31 @@ const read = `curl -s ${COUNT_BASE}/b/pub_….json
 					number from a browser, since the JSON endpoint is CORS-open:
 				</p>
 				<pre><code>{read}</code></pre>
+			</section>
+
+			<section class="band">
+				<h2>Invoice numbers are the same problem</h2>
+				<p>
+					This is the counter's best use, not a feature bolted onto it. Handing out invoice
+					numbers means exactly what a counter already guarantees: two callers at the same
+					instant must never get the same one. The atomic increment <em>is</em> the allocator,
+					and <code>?by=100</code> reserves a block in one round trip rather than a hundred.
+				</p>
+				<p>
+					One thing has to be forbidden. A tally may be corrected — "the download count is really
+					12300" is reasonable — but invoice 42 twice is an accounting problem. Create it with
+					<code>?monotonic=true</code> and the counter keeps everything it already did, minus the
+					ability to move backwards: a negative step or a lower <code>PUT</code> gets a
+					<code>409</code>.
+				</p>
+				<pre><code>{sequence}</code></pre>
+				<p class="muted small">
+					The flag is fixed at creation, because a counter that could drop the guarantee would not
+					have one. It promises no allocation is handed out twice, not that the numbers have no
+					gaps: a caller that dies after taking 43 loses 43. Where unbroken numbering is a legal
+					requirement, that has to happen in the same transaction as the invoice, and no counter
+					over HTTP can do that.
+				</p>
 			</section>
 
 			<section class="band">

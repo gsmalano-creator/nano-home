@@ -24,6 +24,7 @@ export const RELAY_BASE = "https://relay.nano-api.com";
 export const LOCK_BASE = "https://lock.nano-api.com";
 export const CONFIG_BASE = "https://configmaps.nano-api.com";
 export const COUNT_BASE = "https://count.nano-api.com";
+export const UNIQ_BASE = "https://uniq.nano-api.com";
 
 /** How many monitors, schedules, configs or counters a new key can create. */
 export const DEFAULT_QUOTA = 5;
@@ -66,8 +67,16 @@ export const SERVICES: Service[] = [
 		status: "live",
 		host: "count.nano-api.com",
 		summary:
-			"A named counter incremented in one statement, so concurrent writes cannot collide. Readable as JSON or SVG.",
+			"A named counter incremented in one statement, so two callers are never handed the same number. Which is exactly what an invoice sequence needs, so it does that too.",
 		href: "/count/",
+	},
+	{
+		name: "NanoUniq",
+		status: "live",
+		host: "uniq.nano-api.com",
+		summary:
+			"You hand it a key you already have; it says whether that key has arrived before. Duplicate webhook deliveries stop being a problem you solve with a table.",
+		href: "/uniq/",
 	},
 	{
 		name: "NanoLock",

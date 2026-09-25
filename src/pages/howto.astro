@@ -2,7 +2,7 @@
 import BaseHead from "../components/BaseHead.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import { CONFIG_BASE, CONTACT_EMAIL, COUNT_BASE, LOCK_BASE, SERVICES, SIGNUP_CURL, SITE_TITLE, X_HANDLE, X_URL } from "../consts";
+import { CONFIG_BASE, CONTACT_EMAIL, COUNT_BASE, LOCK_BASE, SERVICES, SIGNUP_CURL, SITE_TITLE, UNIQ_BASE, X_HANDLE, X_URL } from "../consts";
 
 const relay = SERVICES.find((s) => s.name === "NanoRelay");
 const relayIsLive = relay?.status === "live";
@@ -13,6 +13,7 @@ export RELAY=https://relay.nano-api.com
 export LOCK=https://lock.nano-api.com
 export CONFIG=https://configmaps.nano-api.com
 export COUNT=https://count.nano-api.com
+export UNIQ=${UNIQ_BASE}
 auth=(-H "Authorization: Bearer $KEY" -H 'content-type: application/json')`;
 
 const firstPing = `curl -X POST "$PULSE/v1/ping/nightly-backup?interval=86400&grace=3600" "\${auth[@]}"`;
@@ -129,6 +130,22 @@ const countBadge = `![downloads]($COUNT/b/pub_….svg)`;
 const countJson = `curl -s "$COUNT/b/pub_….json"
 # {"name":"downloads","value":12300}`;
 
+const uniqClaim = `# the key is the delivery id you already have, not one we invent
+curl -X POST "$UNIQ/v1/uniq/evt_1JK2nX8s?ttl=86400" "\${auth[@]}"
+# 201 {"key":"evt_1JK2nX8s","first_time":true,"hits":1, …}
+
+curl -X POST "$UNIQ/v1/uniq/evt_1JK2nX8s?ttl=86400" "\${auth[@]}"
+# 200 {"key":"evt_1JK2nX8s","first_time":false,"hits":2, …}`;
+
+const uniqShell = `RESPONSE=$(curl -sf -X POST "$UNIQ/v1/uniq/$DELIVERY_ID" "\${auth[@]}")
+
+if [ "$(jq -r .first_time <<< "$RESPONSE")" = "true" ]; then
+  ./process.sh "$DELIVERY_ID" || curl -sf -X DELETE "$UNIQ/v1/uniq/$DELIVERY_ID" "\${auth[@]}"
+fi
+
+curl -s "$UNIQ/v1/uniq/$DELIVERY_ID" "\${auth[@]}"   # look without claiming
+curl -s "$UNIQ/v1/uniq" "\${auth[@]}" | jq            # the 100 most recent`;
+
 const keys = `curl -s "$PULSE/v1/keys" "\${auth[@]}" | jq            # prefixes, scopes, last used
 curl -X POST "$PULSE/v1/keys" "\${auth[@]}" -d '{"name":"CI"}'  # new key, shown once
 curl -X DELETE "$PULSE/v1/keys/key_abc123" \\
@@ -173,6 +190,7 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 					<a href="#lock">Lock: run it only once</a>
 					<a href="#config">Config: change it without a deploy</a>
 					<a href="#count">Count: keep a number, show it anywhere</a>
+					<a href="#uniq">Uniq: have I seen this before?</a>
 					<a href="#together">All of them together</a>
 					<a href="#keys">Keys and quota</a>
 				</nav>
@@ -322,6 +340,25 @@ const usage = `curl -s "$PULSE/v1/whoami" "\${auth[@]}" | jq .usage
 				<p class="muted">
 					Reads never increment, either way. A caching proxy in front of a hit counter would
 					otherwise freeze the number or inflate it.
+				</p>
+
+				<h2 id="uniq">Uniq: have I seen this before?</h2>
+				<p>
+					You supply the key. It is a delivery id, an event id, an order number — something you
+					already hold. Nothing is generated here; the product is the memory.
+				</p>
+				<pre><code>{uniqClaim}</code></pre>
+				<p class="muted">
+					<code>201</code> the first time, <code>200</code> after, so the status code is the answer.
+					The insert is the check, not a <code>SELECT</code> before one: forty simultaneous claims
+					on a key produce exactly one <code>first_time: true</code>.
+				</p>
+				<p>Claim, work, and hand it back if the work failed:</p>
+				<pre><code>{uniqShell}</code></pre>
+				<p class="muted">
+					Keys expire — 24 hours by default, 30 days at most — so set the ttl above your upstream's
+					retry horizon. Without the <code>DELETE</code> on failure, a crash between claiming and
+					finishing means every retry is told it is late and the work never happens.
 				</p>
 
 				<h2 id="together">All of them together</h2>

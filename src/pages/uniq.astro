@@ -1,0 +1,215 @@
+---
+import BaseHead from "../components/BaseHead.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import UniqDemo from "../components/UniqDemo.astro";
+import { SITE_TITLE, UNIQ_BASE } from "../consts";
+
+const claim = `# the key is one you already have: the delivery id
+curl -fsS -X POST "${UNIQ_BASE}/v1/uniq/$DELIVERY_ID?ttl=86400" \\
+  -H "Authorization: Bearer $NANO_API_KEY"
+# 201 {"first_time": true,  "hits": 1}   <- yours, do the work
+# 200 {"first_time": false, "hits": 2}   <- somebody already did`;
+
+const shell = `RESPONSE=$(curl -sf -X POST "${UNIQ_BASE}/v1/uniq/$DELIVERY_ID" \\
+  -H "Authorization: Bearer $NANO_API_KEY")
+
+if [ "$(jq -r .first_time <<< "$RESPONSE")" = "true" ]; then
+  ./process.sh "$DELIVERY_ID" || curl -sf -X DELETE \\
+    "${UNIQ_BASE}/v1/uniq/$DELIVERY_ID" -H "Authorization: Bearer $NANO_API_KEY"
+fi`;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead
+			title={`NanoUniq — ${SITE_TITLE}`}
+			description="Has this key arrived before? You supply the key, it supplies the memory. Duplicate webhook deliveries, without a table and a unique index. Free."
+		/>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section class="hero">
+				<div>
+					<p class="eyebrow">nano-api / uniq</p>
+					<h1>The same webhook,<br /><span class="dim">delivered three times</span></h1>
+					<p class="lede">
+						Almost every queue and webhook is at-least-once, so the duplicate is not a bug you
+						can fix upstream. You hand this a key you already have and it tells you whether that
+						key has arrived before.
+					</p>
+					<p class="cta">
+						<a class="button" href="/howto/#setup">Take a key</a>
+						<a class="button secondary" href="/howto/#uniq">Curl walkthrough</a>
+					</p>
+					<p class="fineprint muted">
+						Free. Signup is one <code>curl</code> and the key comes back in the response. No form, no
+						card, nobody to ask.
+					</p>
+				</div>
+				<UniqDemo />
+			</section>
+
+			<section class="band">
+				<h2>It does not make the key. You already have one.</h2>
+				<p>
+					A Stripe event id, a delivery id, an order number, a message id. Generating a unique
+					value is a pure function and your language already has it. What it cannot give you is
+					memory that every instance of your app shares and that survives a deploy.
+				</p>
+				<pre><code>{claim}</code></pre>
+				<p class="muted small">
+					The status code carries the answer as well as the body: <code>201</code> the first time,
+					<code>200</code> after.
+				</p>
+			</section>
+
+			<section class="band">
+				<h2>What goes wrong without one</h2>
+				<div class="two">
+					<div class="card">
+						<p class="tag">A table and a unique index</p>
+						<ul class="plain">
+							<li>Two deliveries land together, both <code>SELECT</code>, both see nothing</li>
+							<li>Both proceed, and the card is charged twice</li>
+							<li>The fix is to let the insert be the check, which is not what you wrote</li>
+							<li>And now you own a table that grows forever</li>
+						</ul>
+					</div>
+					<div class="card alive-edge">
+						<p class="tag live">With NanoUniq</p>
+						<ul class="plain">
+							<li>One statement decides; the insert <em>is</em> the check</li>
+							<li>Forty simultaneous claims produce exactly one winner</li>
+							<li>Rows expire on their own, so nothing grows forever</li>
+							<li>No migration, no index, no cleanup job</li>
+						</ul>
+					</div>
+				</div>
+			</section>
+
+			<section class="band">
+				<h2>Claim, work, and give it back if the work failed</h2>
+				<pre><code>{shell}</code></pre>
+				<p class="muted small">
+					Without the <code>DELETE</code>, a crash between claiming and finishing means the work
+					never happens at all — the key is held and every retry is told it is late. That is the
+					one sharp edge here, and it is the same trade every idempotency layer makes.
+				</p>
+			</section>
+
+			<section class="band">
+				<h2>What the guarantee is — and is not</h2>
+				<p>
+					<strong>Exactly one caller is told <code>first_time: true</code>.</strong> That is decided
+					by the hit count the write returns, not by comparing timestamps: two arrivals in the same
+					second would both match "first seen now", and both would be told they were first, which is
+					the one answer this must never give twice.
+				</p>
+				<p>
+					<strong>A key claims a window, not eternity.</strong> Default 24 hours, 30 days at most,
+					then it expires and the next arrival is new again. Set the ttl above your upstream's
+					retry horizon. Permanent memory would make this a database rather than an operation, and
+					the whole point is that you do not have to run one.
+				</p>
+				<p class="muted small">
+					Looking is free and changes nothing: <code>GET /v1/uniq/:key</code> works with a
+					read-only key, so a dashboard or a support script can check without claiming.
+				</p>
+			</section>
+
+			<section class="band">
+				<h2>Using it with the others</h2>
+				<p>
+					<a href="/relay/">Relay</a> delivers at-least-once and every call carries
+					<code>X-NanoRelay-Run-Id</code>, which is exactly the kind of key this takes. Pass it
+					here and a retried run stops being a second run.
+				</p>
+				<p class="cta">
+					<a class="button" href="/howto/">How to, in curl</a>
+					<a class="button secondary" href="/about/">What this is</a>
+				</p>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
+
+<style>
+	.hero {
+		display: grid;
+		grid-template-columns: 1.05fr 1fr;
+		gap: 2.5em;
+		align-items: center;
+		padding: 2em 0 1em;
+	}
+	.hero > * {
+		min-width: 0;
+	}
+	.dim {
+		color: var(--muted);
+	}
+	.lede {
+		font-size: 1.1rem;
+		color: var(--muted);
+		max-width: 34em;
+	}
+	.cta {
+		display: flex;
+		gap: 0.7em;
+		flex-wrap: wrap;
+		margin: 1.4em 0 0.6em;
+	}
+	.fineprint {
+		font-size: 0.85rem;
+	}
+	.band {
+		padding: 3em 0 0;
+	}
+	.band > p {
+		max-width: 46em;
+		color: var(--muted);
+	}
+	.small {
+		font-size: 0.85rem;
+	}
+	.two {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 1.2em;
+		margin-top: 1.4em;
+	}
+	.alive-edge {
+		border-color: var(--alive-dim);
+	}
+	ul.plain {
+		list-style: none;
+		margin: 1em 0 0;
+		padding: 0;
+		font-size: 0.95rem;
+	}
+	ul.plain li {
+		padding-left: 1.3em;
+		position: relative;
+		margin-bottom: 0.6em;
+		color: var(--muted);
+	}
+	ul.plain li::before {
+		content: "·";
+		position: absolute;
+		left: 0.3em;
+	}
+	.alive-edge ul.plain li::before {
+		content: "✓";
+		color: var(--alive);
+		left: 0;
+	}
+	@media (max-width: 860px) {
+		.hero,
+		.two {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>
